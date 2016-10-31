@@ -33,12 +33,6 @@ uploadArchives {
     }
 }
 
-repositories {
-    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
-    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
-    mavenCentral()
-}
-
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.7'
     compile gradleApi()
@@ -47,4 +41,23 @@ dependencies {
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
 
     deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
+}
+
+repositories {
+    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
+    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
+    mavenCentral()
+}
+
+buildscript {
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:1.+'
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
+        maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
 }
