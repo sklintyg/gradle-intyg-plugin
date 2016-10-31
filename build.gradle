@@ -1,0 +1,37 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+group = 'se.inera.intyg'
+
+version = System.properties['buildVersion'] ?: '1.1-SNAPSHOT'
+
+configurations {
+    deployerJars
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases") {
+                authentication(userName: System.properties['nexusUsername'], password: System.properties['nexusPassword'])
+            }
+        }
+    }
+}
+
+repositories {
+    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
+    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.7'
+    compile gradleApi()
+    compile 'org.ajoberstar:grgit:1.7.0'
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
+}
