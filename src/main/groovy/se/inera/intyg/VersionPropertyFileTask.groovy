@@ -10,6 +10,8 @@ class VersionPropertyFileTask extends DefaultTask {
     def buildNumber = System.env.BUILD_NUMBER ?: ""
     def gitCommit
     def gitBranch
+    def buildTime
+    def useBuildTime = false
 
     public VersionPropertyFileTask() {
         dependsOn(project.tasks.processResources)
@@ -19,6 +21,10 @@ class VersionPropertyFileTask extends DefaultTask {
         def grgit = Grgit.open()
         gitCommit = grgit.head().id
         gitBranch = grgit.branch.getCurrent().getName()
+
+        if (useBuildTime) {
+            buildTime = new Date()
+        }
 
         getInputs().property("project.version", projectVersion)
         getInputs().property("gitCommit", gitCommit)
@@ -35,6 +41,7 @@ class VersionPropertyFileTask extends DefaultTask {
             entry(key: 'gitCommit', default: gitCommit)
             entry(key: 'gitBranch', default: gitBranch)
             entry(key: 'buildNumber', default: buildNumber)
+            entry(key: 'buildTime', default: buildTime)
         }
     }
 
