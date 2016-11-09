@@ -11,7 +11,6 @@ class VersionPropertyFileTask extends DefaultTask {
     def gitCommit
     def gitBranch
     def buildTime
-    def useBuildTime = false
 
     public VersionPropertyFileTask() {
         dependsOn(project.tasks.processResources)
@@ -21,10 +20,7 @@ class VersionPropertyFileTask extends DefaultTask {
         def grgit = Grgit.open()
         gitCommit = grgit.head().id
         gitBranch = grgit.branch.getCurrent().getName()
-
-        if (useBuildTime) {
-            buildTime = new Date()
-        }
+        buildTime = new Date()
 
         getInputs().property("project.version", projectVersion)
         getInputs().property("gitCommit", gitCommit)
@@ -37,11 +33,11 @@ class VersionPropertyFileTask extends DefaultTask {
     def createFile() {
         ant.touch(file: propertyFile, mkdirs: "true")
         ant.propertyfile(file: propertyFile) {
-            entry(key: 'project.version', default: projectVersion)
-            entry(key: 'gitCommit', default: gitCommit)
-            entry(key: 'gitBranch', default: gitBranch)
-            entry(key: 'buildNumber', default: buildNumber)
-            entry(key: 'buildTime', default: buildTime)
+            entry(key: 'project.version', value: projectVersion)
+            entry(key: 'gitCommit', value: gitCommit)
+            entry(key: 'gitBranch', value: gitBranch)
+            entry(key: 'buildNumber', value: buildNumber)
+            entry(key: 'buildTime', value: buildTime)
         }
     }
 
