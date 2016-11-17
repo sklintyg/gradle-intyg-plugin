@@ -17,7 +17,7 @@ class VersionPropertyFileTask extends DefaultTask {
 
         setDescription('Create a version property file from current build properties.')
 
-        def grgit = Grgit.open()
+        def grgit = Grgit.open(dir: project.rootProject.projectDir)
         gitCommit = grgit.head().id
         gitBranch = grgit.branch.getCurrent().getName()
         buildTime = new Date()

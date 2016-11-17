@@ -13,8 +13,9 @@ class TagReleaseTask extends DefaultTask {
 
     @TaskAction
     tagRelease() {
-        def grgit = Grgit.open(creds: new Credentials(System.properties['githubUser'],
-                                                      System.properties['githubPassword']))
+        def grgit = Grgit.open(dir: project.rootProject.projectDir,
+                creds: new Credentials(System.properties['githubUser'], System.properties['githubPassword']))
+
         grgit.tag.add {
             name = "v" + project.version
             message = "Release of ${project.version}"
