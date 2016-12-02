@@ -8,4 +8,4 @@ Intyg Gradle Plugin is free software: you can redistribute it and/or modify it u
 
 Intyg Gradle Plugin is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU LESSER GENERAL PUBLIC LICENSE for more details.
 
-Se även [LICENSE.md](https://github.com/sklintyg/intyg-gradle-plugin/blob/master/LICENSE.md).
+Se även [LICENSE.md](https://github.com/sklintyg/gradle-intyg-plugin/blob/master/LICENSE.md).
