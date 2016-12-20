@@ -17,7 +17,7 @@ class TagReleaseTask extends DefaultTask {
                 creds: new Credentials(System.properties['githubUser'], System.properties['githubPassword']))
 
         grgit.tag.add {
-            name = "v" + project.version
+            fullName = "v" + project.version
             message = "Release of ${project.version}"
         }
 

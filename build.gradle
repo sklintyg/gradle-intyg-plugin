@@ -5,6 +5,9 @@ group = 'se.inera.intyg'
 
 version = System.properties['buildVersion'] ?: '1.1-SNAPSHOT'
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 configurations {
     deployerJars
 }

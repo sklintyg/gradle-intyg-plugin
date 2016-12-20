@@ -20,7 +20,7 @@ class IntygPlugin implements Plugin<Project> {
         project.ext.findResolvedVersion = this.&findResolvedVersion
     }
 
-    private void addGlobalTaskType(Project project, Class type) {
+    private static void addGlobalTaskType(Project project, Class type) {
         project.extensions.extraProperties.set(type.getSimpleName(), type)
     }
 
