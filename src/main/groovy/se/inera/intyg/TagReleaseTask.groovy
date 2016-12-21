@@ -16,10 +16,7 @@ class TagReleaseTask extends DefaultTask {
         def grgit = Grgit.open(dir: project.rootProject.projectDir,
                 creds: new Credentials(System.properties['githubUser'], System.properties['githubPassword']))
 
-        grgit.tag.add {
-            fullName = "v" + project.version
-            message = "Release of ${project.version}"
-        }
+        grgit.tag.add(name: "v" + project.version, message: "Release of ${project.version}")
 
         grgit.push(tags: true)
     }
