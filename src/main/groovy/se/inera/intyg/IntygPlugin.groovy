@@ -8,7 +8,6 @@ class IntygPlugin implements Plugin<Project> {
     @Override
     def void apply(Project project) {
         project.apply(plugin: 'java')
-        project.apply(plugin: 'org.ajoberstar.grgit')
 
         addGlobalTaskType(project, TagReleaseTask.class)
         
