@@ -10,12 +10,12 @@ class IntygPlugin implements Plugin<Project> {
         project.apply(plugin: 'java')
         project.apply(plugin: 'org.ajoberstar.grgit')
 
-        addGlobalTaskType(project, TagReleaseTask)
+        addGlobalTaskType(project, TagReleaseTask.class)
         
-        addGlobalTaskType(project, SharedTestReportTask)
+        addGlobalTaskType(project, SharedTestReportTask.class)
         
         addGlobalTaskType(project, VersionPropertyFileTask)
-        project.tasks.jar.dependsOn(project.tasks.withType(VersionPropertyFileTask))
+        project.tasks.jar.dependsOn(project.tasks.withType(VersionPropertyFileTask.class))
 
         project.ext.findResolvedVersion = this.&findResolvedVersion
     }
