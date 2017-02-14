@@ -1,5 +1,40 @@
-apply plugin: 'groovy'
-apply plugin: 'maven'
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
+        maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:1.+'
+    }
+}
+
+plugins {
+    id "java-gradle-plugin"
+    id "groovy"
+    id "maven"
+}
+
+repositories {
+    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
+    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
+    mavenCentral()
+}
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.7'
+    compile 'org.ajoberstar:grgit:1.7.0'
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
+}
 
 group = 'se.inera.intyg'
 
@@ -8,15 +43,20 @@ version = System.properties['buildVersion'] ?: '1.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-configurations {
-    deployerJars
+gradlePlugin {
+    plugins {
+        intygPlugin {
+            id = "inera-intyg"
+            implementationClass = "se.inera.intyg.IntygPlugin"
+        }
+    }
 }
 
 task tagRelease {
     description = 'Tags the current head with the projects version.'
     doLast {
-        def grgit = org.ajoberstar.grgit.Grgit.open(creds: new org.ajoberstar.grgit.Credentials(System.properties['githubUser'],
-                                                                                                System.properties['githubPassword']))
+        def grgit = org.ajoberstar.grgit.Grgit.open(creds: new org.ajoberstar.grgit.Credentials(
+                System.properties['githubUser'], System.properties['githubPassword']))
         grgit.tag.add {
             name = "v" + version
             message = "Release of ${version}"
@@ -33,34 +73,5 @@ uploadArchives {
                 authentication(userName: System.properties['nexusUsername'], password: System.properties['nexusPassword'])
             }
         }
-    }
-}
-
-dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.4.7'
-    compile gradleApi()
-    compile 'org.ajoberstar:grgit:1.7.0'
-
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-
-    deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
-}
-
-repositories {
-    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
-    maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
-    mavenCentral()
-}
-
-buildscript {
-    dependencies {
-        classpath 'org.ajoberstar:gradle-git:1.+'
-    }
-
-    repositories {
-        mavenLocal()
-        maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/releases/" }
-        maven { url "https://build-inera.nordicmedtest.se/nexus/content/repositories/snapshots/" }
-        maven { url "https://plugins.gradle.org/m2/" }
     }
 }
