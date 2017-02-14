@@ -13,7 +13,7 @@ class IntygPlugin implements Plugin<Project> {
         
         addGlobalTaskType(project, SharedTestReportTask.class)
         
-        addGlobalTaskType(project, VersionPropertyFileTask)
+        addGlobalTaskType(project, VersionPropertyFileTask.class)
         project.tasks.jar.dependsOn(project.tasks.withType(VersionPropertyFileTask.class))
 
         project.ext.findResolvedVersion = this.&findResolvedVersion
