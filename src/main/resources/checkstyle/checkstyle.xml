@@ -62,7 +62,6 @@
         <module name="MethodLength"/>
         <module name="MethodName"/>
         <module name="MethodParamPad"/>
-        <module name="MissingSwitchDefault"/>
         <module name="ModifierOrder"/>
         <module name="NeedBraces"/>
         <module name="NoWhitespaceBefore"/>

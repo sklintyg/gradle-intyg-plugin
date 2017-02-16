@@ -33,6 +33,7 @@ dependencies {
     compile 'org.ajoberstar:grgit:1.7.0'
     compile 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.8'
     compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1'
+    compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.+'
 
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
 
