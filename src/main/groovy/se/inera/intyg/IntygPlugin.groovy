@@ -77,15 +77,17 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyJacoco(Project project) {
-        project.apply(plugin: 'jacoco')
+        if (project.hasProperty('codeQuality')) {
+            project.apply(plugin: 'jacoco')
 
-        project.jacoco {
-            toolVersion = "0.7.6.201602180812"
-        }
+            project.jacoco {
+                toolVersion = "0.7.6.201602180812"
+            }
 
-        project.test {
-            jacoco {
-                destinationFile = project.file("${project.buildDir}/jacoco/test.exec")
+            project.test {
+                jacoco {
+                    destinationFile = project.file("${project.buildDir}/jacoco/test.exec")
+                }
             }
         }
     }
