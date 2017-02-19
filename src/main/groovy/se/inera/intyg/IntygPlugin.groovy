@@ -2,6 +2,7 @@ package se.inera.intyg
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.quality.FindBugs
 
 class IntygPlugin implements Plugin<Project> {
 
@@ -12,6 +13,7 @@ class IntygPlugin implements Plugin<Project> {
         project.apply(plugin: 'java')
 
         applyCheckstyle(project)
+        applyFindbugs(project)
         applyErrorprone(project)
         applyLicence(project)
         applyJacoco(project)
@@ -42,21 +44,50 @@ class IntygPlugin implements Plugin<Project> {
         project.checkstyleTest.enabled = false
     }
 
+    private void applyFindbugs(Project project) {
+        // Ugly fix to exclude 'specifications' project. Remove when fitnesse is finally gone.
+        if (project.hasProperty('codeQuality') && !(project.name.endsWith('specifications'))) {
+            project.apply(plugin: 'findbugs')
+
+            project.findbugs {
+                def intygJar = project.rootProject.buildscript.configurations.classpath.find { it.name.contains(PLUGIN_NAME) }
+                includeFilterConfig = project.resources.text.fromArchiveEntry(intygJar.path, "/findbugs/findbugsIncludeFilter.xml")
+                ignoreFailures = false
+                effort = "max"
+                reportLevel = "low"
+                sourceSets = [sourceSets.main]
+            }
+
+            project.tasks.withType(FindBugs.class) {
+                classes = classes.filter {
+                    // There are sometimes xml- or sql-files in the build directory and these can obviously not be examined as java classes
+                    !it.path.endsWith(".xml") && !it.path.endsWith(".sql")
+                }
+                reports {
+                    if (project.properties['findBugsHtmlOutput'] == "true") {
+                        xml.enabled = false
+                        html.enabled = true
+                    } else {
+                        xml.enabled = true
+                        html.enabled = false
+                    }
+                }
+            }
+        }
+    }
+
     private void applyErrorprone(Project project) {
-        if (!project.hasProperty("useErrorprone") || project.ext.useErrorprone) {
+        if (project.hasProperty('codeQuality') && (!project.hasProperty("useErrorprone") || project.ext.useErrorprone)) {
             project.apply(plugin: 'net.ltgt.errorprone-base')
 
-            // This makes sure only production code (not tests) is checked
-            if (project.hasProperty('codeQuality')) {
-                project.compileJava {
-                    toolChain net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
-                    options.compilerArgs += ['-Xep:BoxedPrimitiveConstructor:ERROR', '-Xep:ClassCanBeStatic:ERROR', '-Xep:DefaultCharset:ERROR',
-                                             '-Xep:Finally:ERROR', '-Xep:FunctionalInterfaceClash:ERROR', '-Xep:ImmutableEnumChecker:ERROR',
-                                             '-Xep:MissingCasesInEnumSwitch:ERROR', '-Xep:MissingOverride:ERROR',
-                                             '-Xep:NarrowingCompoundAssignment:ERROR', '-Xep:NonOverridingEquals:ERROR',
-                                             '-Xep:TypeParameterUnusedInFormals:ERROR', '-Xep:TypeParameterUnusedInFormals:ERROR',
-                                             '-Xep:UnnecessaryDefaultInEnumSwitch:ERROR']
-                }
+            project.compileJava {
+                toolChain net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
+                options.compilerArgs += ['-Xep:BoxedPrimitiveConstructor:ERROR', '-Xep:ClassCanBeStatic:ERROR',
+                                         '-Xep:DefaultCharset:ERROR', '-Xep:Finally:ERROR', '-Xep:FunctionalInterfaceClash:ERROR',
+                                         '-Xep:ImmutableEnumChecker:ERROR', '-Xep:MissingCasesInEnumSwitch:ERROR',
+                                         '-Xep:MissingOverride:ERROR', '-Xep:NarrowingCompoundAssignment:ERROR',
+                                         '-Xep:NonOverridingEquals:ERROR', '-Xep:TypeParameterUnusedInFormals:ERROR',
+                                         '-Xep:TypeParameterUnusedInFormals:ERROR', '-Xep:UnnecessaryDefaultInEnumSwitch:ERROR']
             }
         }
     }
