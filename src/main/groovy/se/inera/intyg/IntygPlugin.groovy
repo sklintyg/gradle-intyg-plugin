@@ -7,6 +7,7 @@ import org.gradle.api.plugins.quality.FindBugs
 class IntygPlugin implements Plugin<Project> {
 
     private static final PLUGIN_NAME = "gradle-intyg"
+    private static final ERRORPRONE_EXCLUDE = "errorproneExclude"
 
     @Override
     def void apply(Project project) {
@@ -45,7 +46,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyFindbugs(Project project) {
-        // Ugly fix to exclude 'specifications' project. Remove when fitnesse is finally gone.
+        // Ugly fix to exclude 'specifications' projects. Remove when Fitnesse is finally gone.
         if (project.hasProperty('codeQuality') && !(project.name.endsWith('specifications'))) {
             project.apply(plugin: 'findbugs')
 
@@ -77,7 +78,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyErrorprone(Project project) {
-        if (project.hasProperty('codeQuality') && (!project.hasProperty("useErrorprone") || project.ext.useErrorprone)) {
+        if (project.hasProperty('codeQuality') && useErrorprone(project)) {
             project.apply(plugin: 'net.ltgt.errorprone-base')
 
             project.compileJava {
@@ -90,6 +91,11 @@ class IntygPlugin implements Plugin<Project> {
                                          '-Xep:TypeParameterUnusedInFormals:ERROR', '-Xep:UnnecessaryDefaultInEnumSwitch:ERROR']
             }
         }
+    }
+
+    private boolean useErrorprone(Project project) {
+        return !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE)
+                && project.name.matches(project.rootProject.property(ERRORPRONE_EXCLUDE)))
     }
 
     private void applyLicence(Project project) {
