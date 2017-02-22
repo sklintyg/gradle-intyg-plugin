@@ -2,6 +2,7 @@ package se.inera.intyg
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.GradleScriptException
 import org.gradle.api.plugins.quality.FindBugs
 
 class IntygPlugin implements Plugin<Project> {
@@ -28,6 +29,7 @@ class IntygPlugin implements Plugin<Project> {
         project.tasks.jar.dependsOn(project.tasks.withType(VersionPropertyFileTask.class))
 
         project.ext.findResolvedVersion = this.&findResolvedVersion
+        project.ext.addProjectPropertiesFromFile = this.&addProjectPropertiesFromFile
     }
 
     private void applyCheckstyle(Project project) {
@@ -36,6 +38,7 @@ class IntygPlugin implements Plugin<Project> {
         project.checkstyle {
             def intygJar = project.rootProject.buildscript.configurations.classpath.find { it.name.contains(PLUGIN_NAME) }
             config = project.resources.text.fromArchiveEntry(intygJar.path, "/checkstyle/checkstyle.xml")
+            configProperties = ['package_name': project.rootProject.name]
             ignoreFailures = false
             showViolations = true
         }
@@ -135,6 +138,8 @@ class IntygPlugin implements Plugin<Project> {
 
             project.sonarqube {
                 properties {
+                    property "sonar.projectName", project.name
+                    property "sonar.projectKey", project.name
                     property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
                     property "sonar.host.url", System.properties['sonarUrl'] ?: "https://build-inera.nordicmedtest.se/sonar"
                     property "sonar.test.exclusions", "src/test/**"
@@ -162,6 +167,20 @@ class IntygPlugin implements Plugin<Project> {
             return false
         }
         return version
+    }
+
+    public static void addProjectPropertiesFromFile(Project project, File propfile) {
+        if (propfile.exists()) {
+            def props = new Properties();
+            propfile.withInputStream { props.load(it) }
+            project.allprojects { subproject ->
+                props.each { key, value ->
+                    subproject.ext.setProperty(key, value.toString())
+                }
+            }
+        } else {
+            throw new GradleScriptException("File '${propfile.path}' does not exist.", null)
+        }
     }
 
 }
