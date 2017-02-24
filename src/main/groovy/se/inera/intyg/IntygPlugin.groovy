@@ -140,13 +140,13 @@ class IntygPlugin implements Plugin<Project> {
                 properties {
                     property "sonar.projectName", project.name
                     property "sonar.projectKey", project.name
-                    property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
+                    property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
                     property "sonar.host.url", System.properties['sonarUrl'] ?: "https://build-inera.nordicmedtest.se/sonar"
                     property "sonar.test.exclusions", "src/test/**"
                     property "sonar.exclusions", ["**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java",
                                                   "**/vendor/**", "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**",
                                                   "**/templates.js"]
-                    property "sonar.javascript.lcov.reportPath", "${project.buildDir}/karma/merged_lcov.info"
+                    property "sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info"
                 }
             }
         }
