@@ -68,13 +68,8 @@ class IntygPlugin implements Plugin<Project> {
                     !it.path.endsWith(".xml") && !it.path.endsWith(".sql")
                 }
                 reports {
-                    if (project.properties['findBugsHtmlOutput'] == "true") {
-                        xml.enabled = false
-                        html.enabled = true
-                    } else {
-                        xml.enabled = true
-                        html.enabled = false
-                    }
+                    xml.enabled = false
+                    html.enabled = true
                 }
             }
         }
