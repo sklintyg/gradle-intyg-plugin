@@ -71,9 +71,9 @@
         <module name="OperatorWrap"/>
         <module name="OuterTypeFilename"/>
         <module name="PackageDeclaration"/>
-        <module name="PackageName">
+        <!--module name="PackageName">
             <property name="format" value="^se\.inera\.intyg\.${package_name}(\.[a-z][_a-z0-9]*)+$"/>
-        </module>
+        </module-->
         <module name="ParameterAssignment"/>
         <module name="ParameterName"/>
         <module name="ParameterNumber"/>

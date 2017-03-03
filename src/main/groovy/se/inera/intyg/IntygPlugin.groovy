@@ -9,6 +9,7 @@ class IntygPlugin implements Plugin<Project> {
 
     private static final PLUGIN_NAME = "gradle-intyg"
     private static final ERRORPRONE_EXCLUDE = "errorproneExclude"
+    private static final FINDBUGS_EXCLUDE = "findbugsExclude"
 
     @Override
     def void apply(Project project) {
@@ -49,8 +50,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyFindbugs(Project project) {
-        // Ugly fix to exclude 'specifications' projects. Remove when Fitnesse is finally gone.
-        if (project.hasProperty('codeQuality') && !(project.name.endsWith('specifications'))) {
+        if (project.hasProperty('codeQuality') && useFindbugs(project)) {
             project.apply(plugin: 'findbugs')
 
             project.findbugs {
@@ -64,8 +64,8 @@ class IntygPlugin implements Plugin<Project> {
 
             project.tasks.withType(FindBugs.class) {
                 classes = classes.filter {
-                    // There are sometimes xml- or sql-files in the build directory and these can obviously not be examined as java classes
-                    !it.path.endsWith(".xml") && !it.path.endsWith(".sql")
+                    // There are sometimes text files in the build directory and these can obviously not be examined as java classes.
+                    !it.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\$")
                 }
                 reports {
                     xml.enabled = false
@@ -73,6 +73,11 @@ class IntygPlugin implements Plugin<Project> {
                 }
             }
         }
+    }
+
+    private boolean useFindbugs(Project project) {
+        return !(project.rootProject.hasProperty(FINDBUGS_EXCLUDE)
+                && project.name.matches(project.rootProject.property(FINDBUGS_EXCLUDE)))
     }
 
     private void applyErrorprone(Project project) {
