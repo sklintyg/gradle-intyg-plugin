@@ -137,7 +137,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applySonar(Project project) {
-        if (project.hasProperty(CODE_QUALITY_FLAG) && project == project.rootProject) {
+        if (project == project.rootProject) {
             project.apply(plugin: "org.sonarqube")
 
             project.sonarqube {
