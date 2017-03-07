@@ -8,6 +8,7 @@ import org.gradle.api.plugins.quality.FindBugs
 class IntygPlugin implements Plugin<Project> {
 
     private static final PLUGIN_NAME = "gradle-intyg"
+    private static final CODE_QUALITY_FLAG = "codeQuality"
     private static final ERRORPRONE_EXCLUDE = "errorproneExclude"
     private static final FINDBUGS_EXCLUDE = "findbugsExclude"
 
@@ -34,23 +35,24 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyCheckstyle(Project project) {
-        project.apply(plugin: 'checkstyle')
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
+            project.apply(plugin: 'checkstyle')
 
-        project.checkstyle {
-            def intygJar = project.rootProject.buildscript.configurations.classpath.find { it.name.contains(PLUGIN_NAME) }
-            config = project.resources.text.fromArchiveEntry(intygJar.path, "/checkstyle/checkstyle.xml")
-            configProperties = ['package_name': project.rootProject.name]
-            ignoreFailures = false
-            showViolations = true
+            project.checkstyle {
+                def intygJar = project.rootProject.buildscript.configurations.classpath.find { it.name.contains(PLUGIN_NAME) }
+                config = project.resources.text.fromArchiveEntry(intygJar.path, "/checkstyle/checkstyle.xml")
+                configProperties = ['package_name': project.rootProject.name]
+                ignoreFailures = false
+                showViolations = true
+            }
+
+            project.checkstyleMain.source = "src/main/java" // Explicitly disable generated code
+            project.checkstyleTest.enabled = false
         }
-
-        project.checkstyleMain.onlyIf { project.hasProperty('codeQuality') }
-        project.checkstyleMain.source = "src/main/java" // Explicitly disable generated code
-        project.checkstyleTest.enabled = false
     }
 
     private void applyFindbugs(Project project) {
-        if (project.hasProperty('codeQuality') && useFindbugs(project)) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && useFindbugs(project)) {
             project.apply(plugin: 'findbugs')
 
             project.findbugs {
@@ -75,13 +77,13 @@ class IntygPlugin implements Plugin<Project> {
         }
     }
 
-    private boolean useFindbugs(Project project) {
+    private static boolean useFindbugs(Project project) {
         return !(project.rootProject.hasProperty(FINDBUGS_EXCLUDE)
                 && project.name.matches(project.rootProject.property(FINDBUGS_EXCLUDE)))
     }
 
     private void applyErrorprone(Project project) {
-        if (project.hasProperty('codeQuality') && useErrorprone(project)) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
             project.apply(plugin: 'net.ltgt.errorprone-base')
 
             project.compileJava {
@@ -96,28 +98,30 @@ class IntygPlugin implements Plugin<Project> {
         }
     }
 
-    private boolean useErrorprone(Project project) {
+    private static boolean useErrorprone(Project project) {
         return !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE)
                 && project.name.matches(project.rootProject.property(ERRORPRONE_EXCLUDE)))
     }
 
     private void applyLicence(Project project) {
-        project.apply(plugin: 'com.github.hierynomus.license')
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
+            project.apply(plugin: 'com.github.hierynomus.license')
 
-        project.license {
-            ext.project_name = "sklintyg"
-            ext.project_url = "https://github.com/sklintyg"
-            ext.year = Calendar.getInstance().get(Calendar.YEAR)
-            strictCheck = true
-            header = null
-            headerURI = IntygPlugin.class.getResource("/license/header.txt").toURI()
-            include("src/**/*.java")
-            mapping("java", "SLASHSTAR_STYLE")
+            project.license {
+                ext.project_name = "sklintyg"
+                ext.project_url = "https://github.com/sklintyg"
+                ext.year = Calendar.getInstance().get(Calendar.YEAR)
+                strictCheck = true
+                header = null
+                headerURI = IntygPlugin.class.getResource("/license/header.txt").toURI()
+                include("src/**/*.java")
+                mapping("java", "SLASHSTAR_STYLE")
+            }
         }
     }
 
     private void applyJacoco(Project project) {
-        if (project.hasProperty('codeQuality')) {
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
             project.apply(plugin: 'jacoco')
 
             project.jacoco {
@@ -133,7 +137,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applySonar(Project project) {
-        if (project == project.rootProject) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && project == project.rootProject) {
             project.apply(plugin: "org.sonarqube")
 
             project.sonarqube {
