@@ -35,7 +35,6 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyCheckstyle(Project project) {
-        if (project.hasProperty(CODE_QUALITY_FLAG)) {
             project.apply(plugin: 'checkstyle')
 
             project.checkstyle {
@@ -46,9 +45,9 @@ class IntygPlugin implements Plugin<Project> {
                 showViolations = true
             }
 
+            project.checkstyleMain.onlyIf { project.hasProperty(CODE_QUALITY_FLAG) }
             project.checkstyleMain.source = "src/main/java" // Explicitly disable generated code
             project.checkstyleTest.enabled = false
-        }
     }
 
     private void applyFindbugs(Project project) {
