@@ -50,7 +50,7 @@ public class VersionPropertyFileTask extends DefaultTask {
 		properties.setProperty("gitCommit", gitCommit);
 		properties.setProperty("gitBranch", gitBranch);
 		properties.setProperty("buildNumber", buildNumber);
-		properties.setProperty("buildTime", DateFormat.getTimeInstance().format(buildTime));
+		properties.setProperty("buildTime", DateFormat.getDateTimeInstance().format(buildTime));
 
 		Files.createDirectories(Paths.get(propertyFile).getParent());
 		try (FileOutputStream fos = new FileOutputStream(propertyFile)) {
