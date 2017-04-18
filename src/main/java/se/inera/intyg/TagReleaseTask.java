@@ -23,12 +23,12 @@ public class TagReleaseTask extends DefaultTask {
                 .readEnvironment().findGitDir().build()) {
             Git git = new Git(repo);
 
-            git.tag().setName("v" + getProject().getVersion()).setMessage("Release of " + getProject().getVersion()).call();
+            String prefix = System.getProperty("intyg.tag.prefix", "v");
+            git.tag().setName(prefix + getProject().getVersion()).setMessage("Release of " + getProject().getVersion()).call();
 
             CredentialsProvider provider = new UsernamePasswordCredentialsProvider(
                     System.getProperty("githubUser"), System.getProperty("githubPassword"));
             git.push().setCredentialsProvider(provider).setPushTags().call();
         }
     }
-
 }
