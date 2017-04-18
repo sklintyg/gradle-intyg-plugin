@@ -28,7 +28,7 @@ configurations {
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.7'
-    compile 'org.ajoberstar:grgit:1.7.0'
+    compile 'org.ajoberstar:grgit:1.9.1'
     compile 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.9'
     compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1'
     compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1'
