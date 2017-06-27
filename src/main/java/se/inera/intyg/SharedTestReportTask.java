@@ -10,7 +10,6 @@ public class SharedTestReportTask extends TestReport {
 		setDescription("Create a consolidated test report for JUnit tests in all sub projects.");
 		setDestinationDir(getProject().file(getProject().getBuildDir() + "/reports/allTests"));
 		reportOn((Callable) () -> getProject().getTasksByName("test", true));
-        getProject().getTasksByName("test", true).forEach(task -> task.finalizedBy(this));
 	}
 
 }
