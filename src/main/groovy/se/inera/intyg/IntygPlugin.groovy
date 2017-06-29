@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.GradleScriptException
 import org.gradle.api.plugins.quality.FindBugs
+import org.gradle.api.tasks.testing.Test;
 
 class IntygPlugin implements Plugin<Project> {
 
@@ -157,7 +158,7 @@ class IntygPlugin implements Plugin<Project> {
     private void applySharedTestReport(Project project) {
         def reportTask = project.task([ type: SharedTestReportTask ],'testReport')
         project.afterEvaluate {
-            project.subprojects.collect { it.tasks.withType(Test) }.flatten().forEach {
+            project.subprojects.collect { it.tasks.withType(Test.class) }.flatten().forEach {
                 it.finalizedBy(reportTask)
             }
         }
