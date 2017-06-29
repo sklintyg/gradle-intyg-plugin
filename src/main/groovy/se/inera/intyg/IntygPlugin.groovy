@@ -22,10 +22,9 @@ class IntygPlugin implements Plugin<Project> {
         applyLicence(project)
         applyJacoco(project)
         applySonar(project)
+        applySharedTestReport(project)
 
         addGlobalTaskType(project, TagReleaseTask.class)
-
-        addGlobalTaskType(project, SharedTestReportTask.class)
 
         addGlobalTaskType(project, VersionPropertyFileTask.class)
         project.tasks.jar.dependsOn(project.tasks.withType(VersionPropertyFileTask.class))
@@ -151,6 +150,15 @@ class IntygPlugin implements Plugin<Project> {
                                                   "**/templates.js"]
                     property "sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info"
                 }
+            }
+        }
+    }
+
+    private void applySharedTestReport(Project project) {
+        reportTask = project.task(type: SharedTestReportTask,'testReport')
+        project.afterEvaluate {
+            project.subprojects.collect { it.tasks.withType(Test) }.flatten().forEach {
+                it.finalizedBy(reportTask)
             }
         }
     }
