@@ -155,7 +155,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applySharedTestReport(Project project) {
-        reportTask = project.task(type: SharedTestReportTask,'testReport')
+        reportTask = project.task([ type: SharedTestReportTask ],'testReport')
         project.afterEvaluate {
             project.subprojects.collect { it.tasks.withType(Test) }.flatten().forEach {
                 it.finalizedBy(reportTask)
