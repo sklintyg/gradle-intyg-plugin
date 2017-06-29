@@ -4,7 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.GradleScriptException
 import org.gradle.api.plugins.quality.FindBugs
-import org.gradle.api.tasks.testing.Test;
+import org.gradle.api.tasks.testing.Test
 
 class IntygPlugin implements Plugin<Project> {
 
@@ -35,19 +35,19 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyCheckstyle(Project project) {
-            project.apply(plugin: 'checkstyle')
+        project.apply(plugin: 'checkstyle')
 
-            project.checkstyle {
-                def intygJar = project.rootProject.buildscript.configurations.classpath.find { it.name.contains(PLUGIN_NAME) }
-                config = project.resources.text.fromArchiveEntry(intygJar.path, "/checkstyle/checkstyle.xml")
-                configProperties = ['package_name': project.rootProject.name]
-                ignoreFailures = false
-                showViolations = true
-            }
+        project.checkstyle {
+            def intygJar = project.rootProject.buildscript.configurations.classpath.find { it.name.contains(PLUGIN_NAME) }
+            config = project.resources.text.fromArchiveEntry(intygJar.path, "/checkstyle/checkstyle.xml")
+            configProperties = ['package_name': project.rootProject.name]
+            ignoreFailures = false
+            showViolations = true
+        }
 
-            project.checkstyleMain.onlyIf { project.hasProperty(CODE_QUALITY_FLAG) }
-            project.checkstyleMain.source = "src/main/java" // Explicitly disable generated code
-            project.checkstyleTest.enabled = false
+        project.checkstyleMain.onlyIf { project.hasProperty(CODE_QUALITY_FLAG) }
+        project.checkstyleMain.source = "src/main/java" // Explicitly disable generated code
+        project.checkstyleTest.enabled = false
     }
 
     private void applyFindbugs(Project project) {
@@ -156,10 +156,12 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applySharedTestReport(Project project) {
-        def reportTask = project.task([ type: SharedTestReportTask ],'testReport')
-        project.afterEvaluate {
-            project.subprojects.collect { it.tasks.withType(Test.class) }.flatten().forEach {
-                it.finalizedBy(reportTask)
+        def reportTask = project.task([type: SharedTestReportTask], 'testReport')
+        project.subprojects {
+            afterEvaluate { subproject ->
+                subproject.tasks.withType(Test.class).forEach {
+                    it.finalizedBy(reportTask)
+                }
             }
         }
     }
