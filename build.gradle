@@ -38,7 +38,7 @@ dependencies {
     deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
 }
 
-group = 'se.inera.intyg'
+group = 'se.inera.intyg.common'
 
 version = System.properties['buildVersion'] ?: '1.1-SNAPSHOT'
 
@@ -48,7 +48,7 @@ targetCompatibility = 1.8
 gradlePlugin {
     plugins {
         intygPlugin {
-            id = "inera-intyg"
+            id = "se.inera.intyg.common"
             implementationClass = "se.inera.intyg.IntygPlugin"
         }
     }
