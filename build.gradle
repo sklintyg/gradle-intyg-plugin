@@ -38,7 +38,7 @@ dependencies {
     deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
 }
 
-group = 'se.inera.intyg.common'
+group = 'se.inera.intyg.plugin.common'
 
 version = System.properties['buildVersion'] ?: '1.1-SNAPSHOT'
 

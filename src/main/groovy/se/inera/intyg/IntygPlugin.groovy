@@ -8,7 +8,7 @@ import org.gradle.api.tasks.testing.Test
 
 class IntygPlugin implements Plugin<Project> {
 
-    private static final PLUGIN_NAME = "gradle-intyg"
+    private static final PLUGIN_NAME = "se.inera.intyg.plugin.common"
     private static final CODE_QUALITY_FLAG = "codeQuality"
     private static final ERRORPRONE_EXCLUDE = "errorproneExclude"
     private static final FINDBUGS_EXCLUDE = "findbugsExclude"
