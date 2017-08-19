@@ -48,7 +48,7 @@ targetCompatibility = 1.8
 gradlePlugin {
     plugins {
         intygPlugin {
-            id = "se.inera.intyg.common"
+            id = "se.inera.intyg.plugin.common"
             implementationClass = "se.inera.intyg.IntygPlugin"
         }
     }
