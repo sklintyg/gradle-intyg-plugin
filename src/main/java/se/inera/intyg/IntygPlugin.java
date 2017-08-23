@@ -9,6 +9,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.CheckstyleExtension;
+import org.gradle.api.plugins.quality.CheckstylePlugin;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableMap;
 import org.gradle.jvm.tasks.Jar;
 
@@ -35,7 +36,7 @@ class IntygPlugin implements Plugin<Project> {
     }
 
     private void applyCheckstyle(Project project) {
-        project.getPluginManager().apply(Checkstyle.class);
+        project.getPluginManager().apply(CheckstylePlugin.class);
 
         CheckstyleExtension extension = project.getExtensions().getByType(CheckstyleExtension.class);
         FileCollection pluginJar = project.getRootProject().getBuildscript().getConfigurations().getByName("classpath")
