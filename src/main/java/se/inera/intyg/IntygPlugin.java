@@ -1,5 +1,6 @@
 package se.inera.intyg;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.gradle.api.Plugin;
@@ -42,7 +43,7 @@ class IntygPlugin implements Plugin<Project> {
         FileCollection pluginJar = project.getRootProject().getBuildscript().getConfigurations().getByName("classpath")
                 .filter(dep -> dep.getName().contains(PLUGIN_NAME));
         extension.setConfig(project.getResources().getText().fromArchiveEntry(pluginJar.getAsPath(), "/checkstyle/checkstyle.xml"));
-        extension.setConfigProperties(ImmutableMap.of("package_name", project.getRootProject().getName()));
+        extension.setConfigProperties(Collections.singletonMap("package_name", project.getRootProject().getName()));
         extension.setIgnoreFailures(false);
         extension.setShowViolations(true);
 
