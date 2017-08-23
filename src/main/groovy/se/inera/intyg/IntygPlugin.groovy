@@ -2,7 +2,6 @@ package se.inera.intyg
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.GradleScriptException
 import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.tasks.testing.Test
 
@@ -29,9 +28,6 @@ class IntygPlugin implements Plugin<Project> {
 
         addGlobalTaskType(project, VersionPropertyFileTask.class)
         project.tasks.jar.dependsOn(project.tasks.withType(VersionPropertyFileTask.class))
-
-        project.ext.findResolvedVersion = this.&findResolvedVersion
-        project.ext.addProjectPropertiesFromFile = this.&addProjectPropertiesFromFile
     }
 
     private void applyCheckstyle(Project project) {
@@ -168,33 +164,6 @@ class IntygPlugin implements Plugin<Project> {
 
     private static void addGlobalTaskType(Project project, Class type) {
         project.extensions.extraProperties.set(type.getSimpleName(), type)
-    }
-
-    public static String findResolvedVersion(Project project, String groupName) {
-        String version
-        project.configurations.find { it.name == 'compile' }.
-                resolvedConfiguration.getFirstLevelModuleDependencies().find {
-            if (it.moduleGroup == groupName) {
-                version = it.moduleVersion
-                return true
-            }
-            return false
-        }
-        return version
-    }
-
-    public static void addProjectPropertiesFromFile(Project project, File propfile) {
-        if (propfile.exists()) {
-            def props = new Properties();
-            propfile.withInputStream { props.load(it) }
-            project.allprojects { subproject ->
-                props.each { key, value ->
-                    subproject.ext.setProperty(key, value.toString())
-                }
-            }
-        } else {
-            throw new GradleScriptException("File '${propfile.path}' does not exist.", null)
-        }
     }
 
 }
