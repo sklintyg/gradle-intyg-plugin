@@ -11,7 +11,6 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.quality.Checkstyle;
 import org.gradle.api.plugins.quality.CheckstyleExtension;
 import org.gradle.api.plugins.quality.CheckstylePlugin;
-import org.gradle.internal.impldep.com.google.common.collect.ImmutableMap;
 import org.gradle.jvm.tasks.Jar;
 
 class IntygPlugin implements Plugin<Project> {
@@ -23,6 +22,8 @@ class IntygPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        project.getLogger().quiet("Applying IntygPlugin to project " + project.getName() + ".");
+
         project.getPluginManager().apply(JavaPlugin.class);
 
         applyCheckstyle(project);

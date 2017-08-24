@@ -1,41 +1,11 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        maven { url "https://build-inera.nordicmedtest.se/nexus/repository/releases/" }
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-
-    dependencies {
-        classpath 'org.ajoberstar:gradle-git:1.7.0'
-    }
-}
-
 plugins {
     id "java-gradle-plugin"
-    id "groovy"
     id "maven"
-}
-
-repositories {
-    maven { url "https://build-inera.nordicmedtest.se/nexus/repository/releases/" }
-    maven { url "https://plugins.gradle.org/m2/" }
-    mavenCentral()
+    id "org.ajoberstar.grgit" version "1.7.2"
 }
 
 configurations {
     deployerJars
-}
-
-dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.4.11'
-    compile 'org.ajoberstar:grgit:1.9.0'
-    compile 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.10'
-    compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1'
-    compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
-
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-
-    deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
 }
 
 group = 'se.inera.intyg.plugin.common'
@@ -76,4 +46,21 @@ uploadArchives {
             }
         }
     }
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.11'
+    compile 'org.ajoberstar:grgit:1.9.0'
+    compile 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.10'
+    compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1'
+    compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
+}
+
+repositories {
+    maven { url "https://plugins.gradle.org/m2/" }
+    mavenCentral()
 }
