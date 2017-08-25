@@ -2,6 +2,7 @@ package se.inera.intyg;
 
 import static java.util.Collections.singleton;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.gradle.api.Plugin;
@@ -14,7 +15,10 @@ import org.gradle.api.plugins.quality.CheckstylePlugin;
 import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.plugins.quality.FindBugsExtension;
 import org.gradle.api.plugins.quality.FindBugsPlugin;
+import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
+
+import net.ltgt.gradle.errorprone.ErrorProneBasePlugin;
 
 class IntygPlugin implements Plugin<Project> {
 
@@ -31,6 +35,7 @@ class IntygPlugin implements Plugin<Project> {
 
         applyCheckstyle(project);
         applyFindbugs(project);
+        applyErrorprone(project);
 
         addGlobalTaskType(project, TagReleaseTask.class);
         addGlobalTaskType(project, VersionPropertyFileTask.class);
@@ -88,6 +93,23 @@ class IntygPlugin implements Plugin<Project> {
         }
     }
 
+    private void applyErrorprone(Project project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
+            project.getPluginManager().apply(ErrorProneBasePlugin.class);
+
+            project.getTasks().withType(JavaCompile.class).forEach(task -> {
+                task.setToolChain(net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project));
+                task.getOptions().getCompilerArgs().addAll(Arrays.asList(
+                        "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
+                        "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
+                        "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
+                        "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
+                        "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
+                        "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"));
+            });
+        }
+    }
+
     private static String getPluginJarPath(Project project) {
         return project.getRootProject().getBuildscript().getConfigurations().getByName("classpath")
                 .filter(dep -> dep.getName().contains(PLUGIN_NAME)).getAsPath();
@@ -96,6 +118,11 @@ class IntygPlugin implements Plugin<Project> {
     private static boolean useFindbugs(Project project) {
         return !(project.getRootProject().hasProperty(FINDBUGS_EXCLUDE)
                 && project.getName().matches((String) project.getRootProject().property(FINDBUGS_EXCLUDE)));
+    }
+
+    private static boolean useErrorprone(Project project) {
+        return !(project.getRootProject().hasProperty(ERRORPRONE_EXCLUDE)
+                && project.getName().matches((String) project.getRootProject().property(ERRORPRONE_EXCLUDE)));
     }
 
     private static void addGlobalTaskType(Project project, Class type) {
