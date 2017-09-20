@@ -18,7 +18,13 @@ import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.plugins.quality.FindBugsExtension;
 import org.gradle.api.plugins.quality.FindBugsPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.api.tasks.testing.Test;
 import org.gradle.jvm.tasks.Jar;
+import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
+import org.sonarqube.gradle.SonarQubeExtension;
+import org.sonarqube.gradle.SonarQubePlugin;
 
 import net.ltgt.gradle.errorprone.ErrorProneBasePlugin;
 import nl.javadude.gradle.plugins.license.License;
@@ -42,9 +48,13 @@ class IntygPlugin implements Plugin<Project> {
         applyFindbugs(project);
         applyErrorprone(project);
         applyLicence(project);
+        applyJacoco(project);
+        applySonar(project);
+        applySharedTestReport(project);
 
         addGlobalTaskType(project, TagReleaseTask.class);
         addGlobalTaskType(project, VersionPropertyFileTask.class);
+
         project.getTasks().withType(Jar.class).forEach(task -> task.dependsOn(project.getTasks().withType(VersionPropertyFileTask.class)));
     }
 
@@ -140,6 +150,54 @@ class IntygPlugin implements Plugin<Project> {
                 });
             });
         }
+    }
+
+    private void applyJacoco(Project project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
+            project.getPluginManager().apply(JacocoPlugin.class);
+
+            JacocoPluginExtension extension = project.getExtensions().getByType(JacocoPluginExtension.class);
+            extension.setToolVersion("0.7.6.201602180812");
+
+            project.afterEvaluate(aProject -> {
+                project.getTasks().withType(Test.class).forEach(task -> {
+                    task.getExtensions().findByType(JacocoTaskExtension.class)
+                            .setDestinationFile(project.file("${project.buildDir}/jacoco/test.exec"));
+                });
+            });
+        }
+    }
+
+    private void applySonar(Project project) {
+        if (project == project.getRootProject()) {
+            project.getPluginManager().apply(SonarQubePlugin.class);
+
+            SonarQubeExtension extension = project.getExtensions().getByType(SonarQubeExtension.class);
+            extension.properties(properties -> {
+                properties.property("sonar.projectName", project.getName());
+                properties.property("sonar.projectKey", project.getName());
+                properties.property("sonar.jacoco.reportPath", "build/jacoco/test.exec");
+                properties.property("sonar.host.url",
+                        System.getProperty("sonarUrl") != null ? System.getProperty("sonarUrl")
+                                : "https://build-inera.nordicmedtest.se/sonar");
+                properties.property("sonar.test.exclusions", "src/test/**");
+                properties.property("sonar.exclusions", Arrays.asList("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java",
+                        "**/*Fake*.java", "**/vendor/**", "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**",
+                        "**/templates.js"));
+                properties.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info");
+            });
+        }
+    }
+
+    private void applySharedTestReport(Project project) {
+        SharedTestReportTask reportTask = project.getTasks().create("testReport", SharedTestReportTask.class);
+        project.getSubprojects().forEach(subproject -> {
+            subproject.afterEvaluate(aProject -> {
+                aProject.getTasks().withType(Test.class).forEach(task -> {
+                    task.finalizedBy(reportTask);
+                });
+            });
+        });
     }
 
     private static String getPluginJarPath(Project project) {
