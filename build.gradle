@@ -33,11 +33,6 @@ task tagRelease {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
     repositories {
         maven {
             url "https://build-inera.nordicmedtest.se/nexus/repository/releases/"
