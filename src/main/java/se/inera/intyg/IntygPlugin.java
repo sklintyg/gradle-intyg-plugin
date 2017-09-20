@@ -3,7 +3,9 @@ package se.inera.intyg;
 import static java.util.Collections.singleton;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -19,6 +21,9 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
 
 import net.ltgt.gradle.errorprone.ErrorProneBasePlugin;
+import nl.javadude.gradle.plugins.license.License;
+import nl.javadude.gradle.plugins.license.LicenseExtension;
+import nl.javadude.gradle.plugins.license.LicensePlugin;
 
 class IntygPlugin implements Plugin<Project> {
 
@@ -36,12 +41,11 @@ class IntygPlugin implements Plugin<Project> {
         applyCheckstyle(project);
         applyFindbugs(project);
         applyErrorprone(project);
+        applyLicence(project);
 
         addGlobalTaskType(project, TagReleaseTask.class);
         addGlobalTaskType(project, VersionPropertyFileTask.class);
-        project.getTasks().withType(Jar.class).forEach(task -> {
-            task.dependsOn(project.getTasks().withType(VersionPropertyFileTask.class));
-        });
+        project.getTasks().withType(Jar.class).forEach(task -> task.dependsOn(project.getTasks().withType(VersionPropertyFileTask.class)));
     }
 
     private void applyCheckstyle(Project project) {
@@ -59,9 +63,7 @@ class IntygPlugin implements Plugin<Project> {
                 csTask.setSource("src/main/java"); // Explicitly disable generated code
                 csTask.onlyIf(dummy -> project.hasProperty(CODE_QUALITY_FLAG));
             });
-            project.getTasksByName("checkstyleTest", false).forEach(task -> {
-                task.setEnabled(false);
-            });
+            project.getTasksByName("checkstyleTest", false).forEach(task -> task.setEnabled(false));
         });
     }
 
@@ -97,15 +99,45 @@ class IntygPlugin implements Plugin<Project> {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
             project.getPluginManager().apply(ErrorProneBasePlugin.class);
 
-            project.getTasks().withType(JavaCompile.class).forEach(task -> {
-                task.setToolChain(net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project));
-                task.getOptions().getCompilerArgs().addAll(Arrays.asList(
-                        "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
-                        "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
-                        "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
-                        "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
-                        "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
-                        "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"));
+            project.afterEvaluate(aProject -> {
+                project.getTasksByName("compileJava", false).forEach(task -> {
+                    JavaCompile jTask = (JavaCompile) task;
+                    jTask.setToolChain(net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project));
+                    jTask.getOptions().getCompilerArgs().addAll(Arrays.asList(
+                            "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
+                            "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
+                            "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
+                            "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
+                            "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
+                            "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"));
+                });
+            });
+        }
+    }
+
+    private void applyLicence(Project project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
+            project.getPluginManager().apply(LicensePlugin.class);
+
+            LicenseExtension extension = project.getExtensions().getByType(LicenseExtension.class);
+
+            extension.setStrictCheck(true);
+            extension.setHeader(null);
+            try {
+                extension.setHeaderURI(IntygPlugin.class.getResource("/license/header.txt").toURI());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            extension.setIncludePatterns(singleton("**/*.java"));
+            extension.mapping("java", "SLASHSTAR_STYLE");
+
+            project.afterEvaluate(aProject -> {
+                project.getTasks().withType(License.class).forEach(task -> {
+                    task.setInheritedProperties(new HashMap<>());
+                    task.getInheritedProperties().put("project_name", "sklintyg");
+                    task.getInheritedProperties().put("project_url", "https://github.com/sklintyg");
+                    task.getInheritedProperties().put("year", String.valueOf(Calendar.getInstance().get(Calendar.YEAR)));
+                });
             });
         }
     }
