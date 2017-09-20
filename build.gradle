@@ -1,15 +1,10 @@
 plugins {
     id "java-gradle-plugin"
-    id "maven"
+    id "maven-publish"
     id "org.ajoberstar.grgit" version "1.7.2"
 }
 
-configurations {
-    deployerJars
-}
-
 group = 'se.inera.intyg.plugin.common'
-
 version = System.properties['buildVersion'] ?: '1.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
@@ -37,12 +32,18 @@ task tagRelease {
     }
 }
 
-uploadArchives {
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
     repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: "https://build-inera.nordicmedtest.se/nexus/repository/releases/") {
-                authentication(userName: System.properties['nexusUsername'], password: System.properties['nexusPassword'])
+        maven {
+            url "https://build-inera.nordicmedtest.se/nexus/repository/releases/"
+            credentials {
+                username System.properties['nexusUsername']
+                password System.properties['nexusPassword']
             }
         }
     }
@@ -56,8 +57,6 @@ dependencies {
     compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
 
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-
-    deployerJars "org.apache.maven.wagon:wagon-webdav:1.0-beta-2"
 }
 
 repositories {
