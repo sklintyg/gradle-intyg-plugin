@@ -17,6 +17,6 @@ stage('build') {
 
 stage('tag and upload') {
     node {
-        shgradle "publish tagRelease -DbuildVersion=${buildVersion}"
+        shgradle "publishPluginMavenPublicationToMavenRepository tagRelease -DbuildVersion=${buildVersion}"
     }
 }
