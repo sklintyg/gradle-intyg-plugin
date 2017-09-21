@@ -46,14 +46,10 @@ class IntygPlugin : Plugin<Project> {
         applyJacoco(project)
         applySonar(project)
         applySharedTestReport(project)
+        applyVersionPropertyFile(project)
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
-
-        project.afterEvaluate {
-            tasks.withType(VersionPropertyFileTask::class.java).forEach { it.dependsOn(getTasksByName("processResources", false)) }
-            tasks.withType(Jar::class.java).forEach { it.dependsOn(tasks.withType(VersionPropertyFileTask::class.java)) }
-        }
     }
 
     private fun applyCheckstyle(project: Project) {
@@ -187,8 +183,19 @@ class IntygPlugin : Plugin<Project> {
         val reportTask = project.tasks.create("testReport", SharedTestReportTask::class.java)
         project.subprojects.forEach { subProject ->
             subProject.afterEvaluate {
+                // We want this task to finalize all test tasks, so that it is run whether any tests failed or not.
+                // B/c of a limitation in gradle, we cannot both depend on a task AND finalize it. Therefore we depend
+                // on the output of the test tasks, rather than the test tasks themselves.
+                reportTask.reportOn(project.getTasksByName("test", true).map { task -> (task as Test).binResultsDir })
                 tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
             }
+        }
+    }
+
+    private fun applyVersionPropertyFile(project: Project) {
+        project.afterEvaluate {
+            tasks.withType(VersionPropertyFileTask::class.java).forEach { it.dependsOn(getTasksByName("processResources", false)) }
+            tasks.withType(Jar::class.java).forEach { it.dependsOn(tasks.withType(VersionPropertyFileTask::class.java)) }
         }
     }
 
