@@ -4,14 +4,10 @@ import static java.util.Collections.singleton;
 
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.plugins.quality.Checkstyle;
-import org.gradle.api.plugins.quality.CheckstyleExtension;
-import org.gradle.api.plugins.quality.CheckstylePlugin;
 import org.gradle.api.plugins.quality.FindBugs;
 import org.gradle.api.plugins.quality.FindBugsExtension;
 import org.gradle.api.plugins.quality.FindBugsPlugin;
@@ -34,25 +30,6 @@ public class PluginMethods {
     private static final String FINDBUGS_EXCLUDE = "findbugsExclude";
     private static final String ERRORPRONE_EXCLUDE = "errorproneExclude";
     private static final String PLUGIN_NAME = "se.inera.intyg.plugin.common";
-
-    static void applyCheckstyle(Project project) {
-        project.getPluginManager().apply(CheckstylePlugin.class);
-
-        CheckstyleExtension extension = project.getExtensions().getByType(CheckstyleExtension.class);
-        extension.setConfig(project.getResources().getText().fromArchiveEntry(getPluginJarPath(project), "/checkstyle/checkstyle.xml"));
-        extension.setConfigProperties(Collections.singletonMap("package_name", project.getRootProject().getName()));
-        extension.setIgnoreFailures(false);
-        extension.setShowViolations(true);
-
-        project.afterEvaluate(aProject -> {
-            project.getTasksByName("checkstyleMain", false).forEach(task -> {
-                Checkstyle csTask = (Checkstyle) task;
-                csTask.setSource("src/main/java"); // Explicitly disable generated code
-                csTask.onlyIf(dummy -> project.hasProperty(CODE_QUALITY_FLAG));
-            });
-            project.getTasksByName("checkstyleTest", false).forEach(task -> task.setEnabled(false));
-        });
-    }
 
     static void applyFindbugs(Project project) {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useFindbugs(project)) {
