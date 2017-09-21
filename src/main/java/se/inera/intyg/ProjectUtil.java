@@ -10,16 +10,16 @@ import java.util.Properties;
 import org.gradle.api.GradleScriptException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.ResolvedDependency;
+import org.gradle.api.artifacts.ResolvedArtifact;
 
 public class ProjectUtil {
 
     public static String findResolvedVersion(Project project, String groupName) {
         Optional<Configuration> compileConfiguration = project.getConfigurations().stream()
                 .filter(configuration -> configuration.getName().equals("compile")).findFirst();
-        for (ResolvedDependency dependency : compileConfiguration.get().getResolvedConfiguration().getFirstLevelModuleDependencies()) {
-            if (dependency.getModuleGroup().equals(groupName)) {
-                return dependency.getModuleVersion();
+        for (ResolvedArtifact dependency : compileConfiguration.get().getResolvedConfiguration().getResolvedArtifacts()) {
+            if (dependency.getModuleVersion().getId().getGroup().equals(groupName)) {
+                return dependency.getModuleVersion().getId().getVersion();
             }
         }
         throw new RuntimeException("No group with name " + groupName + " found in project " + project.getName());
