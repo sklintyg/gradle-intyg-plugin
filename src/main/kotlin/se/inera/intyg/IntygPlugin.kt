@@ -22,7 +22,10 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
+import java.io.File
+import java.io.FileInputStream
 import java.util.Calendar
+import java.util.Properties
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
@@ -201,4 +204,24 @@ class IntygPlugin : Plugin<Project> {
             !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE) &&
                     project.name.matches((project.rootProject.property(ERRORPRONE_EXCLUDE) as String).toRegex()))
 
+}
+
+fun addProjectPropertiesFromFile(project: Project, propfile: File) {
+    val props = Properties()
+    props.load(FileInputStream(propfile))
+    project.allprojects.forEach { subProject ->
+        props.entries.forEach { (key, value) ->
+            subProject.extensions.extraProperties.set(key as String, value as String)
+        }
+    }
+}
+
+fun findResolvedVersion(project: Project, groupName: String): String {
+    val compileConfiguration = project.configurations.findByName("compile") ?: throw RuntimeException("No compile configuration!")
+    compileConfiguration.resolvedConfiguration.resolvedArtifacts.forEach {
+        if (it.moduleVersion.id.group == groupName) {
+            return it.moduleVersion.id.version
+        }
+    }
+    throw RuntimeException("No group with name $groupName found in project ${project.name}")
 }
