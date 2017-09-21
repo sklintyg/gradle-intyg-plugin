@@ -1,6 +1,9 @@
 package se.inera.intyg
 
 import net.ltgt.gradle.errorprone.ErrorProneBasePlugin
+import nl.javadude.gradle.plugins.license.License
+import nl.javadude.gradle.plugins.license.LicenseExtension
+import nl.javadude.gradle.plugins.license.LicensePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
@@ -13,6 +16,7 @@ import org.gradle.api.plugins.quality.FindBugsExtension
 import org.gradle.api.plugins.quality.FindBugsPlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
+import java.util.Calendar
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
@@ -22,14 +26,14 @@ val ERRORPRONE_EXCLUDE = "errorproneExclude"
 class IntygPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.logger.quiet("Applying " + PLUGIN_NAME + " to project " + project.name + " (1).")
+        project.logger.quiet("Applying " + PLUGIN_NAME + " to project " + project.name + " (2).")
 
         project.pluginManager.apply(JavaPlugin::class.java)
 
         applyCheckstyle(project)
         applyFindbugs(project)
         applyErrorprone(project)
-        PluginMethods.applyLicence(project)
+        applyLicence(project)
         PluginMethods.applyJacoco(project)
         PluginMethods.applySonar(project)
         PluginMethods.applySharedTestReport(project)
@@ -102,6 +106,29 @@ class IntygPlugin : Plugin<Project> {
                             "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
                             "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
                             "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"))
+                }
+            }
+        }
+    }
+
+    private fun applyLicence(project: Project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
+            project.pluginManager.apply(LicensePlugin::class.java)
+
+            with(project.extensions.getByType(LicenseExtension::class.java)) {
+                strictCheck = true
+                header = null
+                headerURI = IntygPlugin::class.java.getResource("/license/header.txt").toURI()
+                includePatterns = setOf("**/*.java")
+                mapping("java", "SLASHSTAR_STYLE")
+            }
+
+            project.afterEvaluate {
+                tasks.withType(License::class.java).forEach { task ->
+                    task.inheritedProperties = mutableMapOf()
+                    task.inheritedProperties.put("project_name", "sklintyg")
+                    task.inheritedProperties.put("project_url", "https://github.com/sklintyg")
+                    task.inheritedProperties.put("year", Calendar.getInstance().get(Calendar.YEAR).toString())
                 }
             }
         }

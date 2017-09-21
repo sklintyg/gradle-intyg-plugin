@@ -1,13 +1,8 @@
 package se.inera.intyg;
 
-import static java.util.Collections.singleton;
-
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
 
 import org.gradle.api.Project;
-import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
@@ -15,41 +10,9 @@ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
 import org.sonarqube.gradle.SonarQubeExtension;
 import org.sonarqube.gradle.SonarQubePlugin;
 
-import net.ltgt.gradle.errorprone.ErrorProneBasePlugin;
-import nl.javadude.gradle.plugins.license.License;
-import nl.javadude.gradle.plugins.license.LicenseExtension;
-import nl.javadude.gradle.plugins.license.LicensePlugin;
-
 public class PluginMethods {
 
     private static final String CODE_QUALITY_FLAG = "codeQuality";
-
-    static void applyLicence(Project project) {
-        if (project.hasProperty(CODE_QUALITY_FLAG)) {
-            project.getPluginManager().apply(LicensePlugin.class);
-
-            LicenseExtension extension = project.getExtensions().getByType(LicenseExtension.class);
-
-            extension.setStrictCheck(true);
-            extension.setHeader(null);
-            try {
-                extension.setHeaderURI(IntygPlugin.class.getResource("/license/header.txt").toURI());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            extension.setIncludePatterns(singleton("**/*.java"));
-            extension.mapping("java", "SLASHSTAR_STYLE");
-
-            project.afterEvaluate(aProject -> {
-                project.getTasks().withType(License.class).forEach(task -> {
-                    task.setInheritedProperties(new HashMap<>());
-                    task.getInheritedProperties().put("project_name", "sklintyg");
-                    task.getInheritedProperties().put("project_url", "https://github.com/sklintyg");
-                    task.getInheritedProperties().put("year", String.valueOf(Calendar.getInstance().get(Calendar.YEAR)));
-                });
-            });
-        }
-    }
 
     static void applyJacoco(Project project) {
         if (project.hasProperty(CODE_QUALITY_FLAG)) {
