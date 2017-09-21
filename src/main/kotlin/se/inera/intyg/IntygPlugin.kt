@@ -1,21 +1,23 @@
 package se.inera.intyg
 
+import net.ltgt.gradle.errorprone.ErrorProneBasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.plugins.quality.CheckstylePlugin
-import org.gradle.jvm.tasks.Jar
 import org.gradle.api.plugins.quality.FindBugs
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.FindBugsExtension
 import org.gradle.api.plugins.quality.FindBugsPlugin
-
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.jvm.tasks.Jar
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
 val FINDBUGS_EXCLUDE = "findbugsExclude"
+val ERRORPRONE_EXCLUDE = "errorproneExclude"
 
 class IntygPlugin : Plugin<Project> {
 
@@ -26,7 +28,7 @@ class IntygPlugin : Plugin<Project> {
 
         applyCheckstyle(project)
         applyFindbugs(project)
-        PluginMethods.applyErrorprone(project)
+        applyErrorprone(project)
         PluginMethods.applyLicence(project)
         PluginMethods.applyJacoco(project)
         PluginMethods.applySonar(project)
@@ -85,11 +87,35 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
+    private fun applyErrorprone(project: Project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
+            project.pluginManager.apply(ErrorProneBasePlugin::class.java)
+
+            project.afterEvaluate {
+                getTasksByName("compileJava", false).forEach {
+                    val jTask = it as JavaCompile
+                    jTask.toolChain = net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
+                    jTask.options.compilerArgs.addAll(listOf(
+                            "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
+                            "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
+                            "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
+                            "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
+                            "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
+                            "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"))
+                }
+            }
+        }
+    }
+
     private fun getPluginJarPath(project: Project) =
             project.rootProject.buildscript.configurations.getByName("classpath").filter { it.name.contains(PLUGIN_NAME) }.asPath
 
     private fun useFindbugs(project: Project) =
             !(project.rootProject.hasProperty(FINDBUGS_EXCLUDE) &&
                     project.name.matches((project.rootProject.property(FINDBUGS_EXCLUDE) as String).toRegex()))
+
+    private fun useErrorprone(project: Project) =
+            !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE) &&
+                    project.name.matches((project.rootProject.property(ERRORPRONE_EXCLUDE) as String).toRegex()))
 
 }

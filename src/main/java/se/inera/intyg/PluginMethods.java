@@ -23,27 +23,6 @@ import nl.javadude.gradle.plugins.license.LicensePlugin;
 public class PluginMethods {
 
     private static final String CODE_QUALITY_FLAG = "codeQuality";
-    private static final String ERRORPRONE_EXCLUDE = "errorproneExclude";
-
-    static void applyErrorprone(Project project) {
-        if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
-            project.getPluginManager().apply(ErrorProneBasePlugin.class);
-
-            project.afterEvaluate(aProject -> {
-                project.getTasksByName("compileJava", false).forEach(task -> {
-                    JavaCompile jTask = (JavaCompile) task;
-                    jTask.setToolChain(net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project));
-                    jTask.getOptions().getCompilerArgs().addAll(Arrays.asList(
-                            "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
-                            "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
-                            "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
-                            "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
-                            "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
-                            "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"));
-                });
-            });
-        }
-    }
 
     static void applyLicence(Project project) {
         if (project.hasProperty(CODE_QUALITY_FLAG)) {
@@ -122,11 +101,6 @@ public class PluginMethods {
 
     static void addGlobalTaskType(Project project, Class type) {
         project.getExtensions().getExtraProperties().set(type.getSimpleName(), type);
-    }
-
-    private static boolean useErrorprone(Project project) {
-        return !(project.getRootProject().hasProperty(ERRORPRONE_EXCLUDE)
-                && project.getName().matches((String) project.getRootProject().property(ERRORPRONE_EXCLUDE)));
     }
 
 }
