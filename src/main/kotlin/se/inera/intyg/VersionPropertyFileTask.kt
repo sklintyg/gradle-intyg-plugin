@@ -25,9 +25,9 @@ open class VersionPropertyFileTask : DefaultTask() {
         description = "Create a version property file from current build properties."
 
         FileRepositoryBuilder().setGitDir(File(project.rootProject.projectDir, ".git"))
-                .readEnvironment().findGitDir().build().use { repo ->
-            gitCommit = repo.findRef(HEAD).name
-            gitBranch = repo.branch
+                .readEnvironment().findGitDir().build().use {
+            gitCommit = it.findRef(HEAD).name
+            gitBranch = it.branch
         }
 
         inputs.property("project.version", projectVersion)
