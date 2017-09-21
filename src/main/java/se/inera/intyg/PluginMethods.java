@@ -1,7 +1,6 @@
 package se.inera.intyg;
 
 import static java.util.Collections.singleton;
-import static se.inera.intyg.IntygPlugin.PLUGIN_NAME;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -34,6 +33,7 @@ public class PluginMethods {
     private static final String CODE_QUALITY_FLAG = "codeQuality";
     private static final String FINDBUGS_EXCLUDE = "findbugsExclude";
     private static final String ERRORPRONE_EXCLUDE = "errorproneExclude";
+    private static final String PLUGIN_NAME = "se.inera.intyg.plugin.common";
 
     static void applyCheckstyle(Project project) {
         project.getPluginManager().apply(CheckstylePlugin.class);

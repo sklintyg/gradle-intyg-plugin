@@ -5,6 +5,9 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 plugins {
     `maven-publish`
     `java-gradle-plugin`
+
+    kotlin("jvm", "1.1.4-3")
+
     id("org.ajoberstar.grgit") version "2.0.1"
 }
 
@@ -48,6 +51,9 @@ publishing {
 }
 
 dependencies {
+    val kotlinVersion = "1.1.4-3"
+
+    compile(kotlin("stdlib", kotlinVersion))
     compile("org.codehaus.groovy:groovy-all:2.4.11")
     compile("org.ajoberstar:grgit:1.9.0")
     compile("net.ltgt.gradle:gradle-errorprone-plugin:0.0.10")

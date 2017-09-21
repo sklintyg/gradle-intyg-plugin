@@ -22,7 +22,7 @@ public class ProjectUtil {
                 return dependency.getModuleVersion();
             }
         }
-        throw new RuntimeException("No configuration with name " + groupName + " found");
+        throw new RuntimeException("No group with name " + groupName + " found in project " + project.getName());
     }
 
     public static void addProjectPropertiesFromFile(Project project, File propfile) {
