@@ -50,7 +50,10 @@ class IntygPlugin : Plugin<Project> {
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
 
-        project.tasks.withType(Jar::class.java).forEach { it.dependsOn(project.tasks.withType(VersionPropertyFileTask::class.java)) }
+        project.afterEvaluate {
+            tasks.withType(VersionPropertyFileTask::class.java).forEach { it.dependsOn(getTasksByName("processResources", false)) }
+            tasks.withType(Jar::class.java).forEach { it.dependsOn(tasks.withType(VersionPropertyFileTask::class.java)) }
+        }
     }
 
     private fun applyCheckstyle(project: Project) {

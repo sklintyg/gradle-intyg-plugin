@@ -57,6 +57,7 @@ dependencies {
     val kotlinVersion = "1.1.4-3"
 
     compile(kotlin("stdlib", kotlinVersion))
+    compile(kotlin("stdlib-jre8", kotlinVersion))
     compile("org.ajoberstar:grgit:1.9.0")
     compile("net.ltgt.gradle:gradle-errorprone-plugin:0.0.10")
     compile("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
