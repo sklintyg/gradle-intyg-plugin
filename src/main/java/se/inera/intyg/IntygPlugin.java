@@ -162,7 +162,7 @@ class IntygPlugin implements Plugin<Project> {
             project.afterEvaluate(aProject -> {
                 project.getTasks().withType(Test.class).forEach(task -> {
                     task.getExtensions().findByType(JacocoTaskExtension.class)
-                            .setDestinationFile(project.file("${project.buildDir}/jacoco/test.exec"));
+                            .setDestinationFile(project.file(project.getBuildDir() + "/jacoco/test.exec"));
                 });
             });
         }
