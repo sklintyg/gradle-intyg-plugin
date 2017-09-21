@@ -5,8 +5,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 plugins {
     `maven-publish`
     `java-gradle-plugin`
-
-    kotlin("jvm", "1.1.4-3")
+    `kotlin-dsl`
 
     id("org.ajoberstar.grgit") version "2.0.1"
 }
@@ -54,16 +53,13 @@ dependencies {
     val kotlinVersion = "1.1.4-3"
 
     compile(kotlin("stdlib", kotlinVersion))
-    compile("org.codehaus.groovy:groovy-all:2.4.11")
     compile("org.ajoberstar:grgit:1.9.0")
     compile("net.ltgt.gradle:gradle-errorprone-plugin:0.0.10")
     compile("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
     compile("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5")
-
-    testCompile("org.spockframework:spock-core:1.0-groovy-2.4")
 }
 
 repositories {
-    maven { url = uri("https://plugins.gradle.org/m2/") }
+    maven("https://plugins.gradle.org/m2/")
     mavenCentral()
 }
