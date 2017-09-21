@@ -24,7 +24,6 @@ import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.util.Calendar
 
-
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
 val FINDBUGS_EXCLUDE = "findbugsExclude"
@@ -33,7 +32,7 @@ val ERRORPRONE_EXCLUDE = "errorproneExclude"
 class IntygPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.logger.quiet("Applying $PLUGIN_NAME to project ${project.name} (4).")
+        project.logger.quiet("Applying $PLUGIN_NAME to project ${project.name}.")
 
         project.pluginManager.apply(JavaPlugin::class.java)
 
@@ -43,10 +42,10 @@ class IntygPlugin : Plugin<Project> {
         applyLicence(project)
         applyJacoco(project)
         applySonar(project)
-        PluginMethods.applySharedTestReport(project)
+        applySharedTestReport(project)
 
-        PluginMethods.addGlobalTaskType(project, TagReleaseTask::class.java)
-        PluginMethods.addGlobalTaskType(project, VersionPropertyFileTask::class.java)
+        addGlobalTaskType(project, TagReleaseTask::class.java)
+        addGlobalTaskType(project, VersionPropertyFileTask::class.java)
 
         project.tasks.withType(Jar::class.java).forEach { it.dependsOn(project.tasks.withType(VersionPropertyFileTask::class.java)) }
     }
@@ -176,6 +175,19 @@ class IntygPlugin : Plugin<Project> {
                 }
             }
         }
+    }
+
+    private fun applySharedTestReport(project: Project) {
+        val reportTask = project.tasks.create("testReport", SharedTestReportTask::class.java)
+        project.subprojects.forEach { subProject ->
+            subProject.afterEvaluate {
+                tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
+            }
+        }
+    }
+
+    private fun addGlobalTaskType(project: Project, type: Class<*>) {
+        project.extensions.extraProperties.set(type.simpleName, type)
     }
 
     private fun getPluginJarPath(project: Project) =
