@@ -15,8 +15,15 @@ import org.gradle.api.plugins.quality.FindBugs
 import org.gradle.api.plugins.quality.FindBugsExtension
 import org.gradle.api.plugins.quality.FindBugsPlugin
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
+import org.gradle.testing.jacoco.plugins.JacocoPlugin
+import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.sonarqube.gradle.SonarQubeExtension
+import org.sonarqube.gradle.SonarQubePlugin
 import java.util.Calendar
+
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
@@ -26,7 +33,7 @@ val ERRORPRONE_EXCLUDE = "errorproneExclude"
 class IntygPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.logger.quiet("Applying " + PLUGIN_NAME + " to project " + project.name + " (2).")
+        project.logger.quiet("Applying $PLUGIN_NAME to project ${project.name} (4).")
 
         project.pluginManager.apply(JavaPlugin::class.java)
 
@@ -34,8 +41,8 @@ class IntygPlugin : Plugin<Project> {
         applyFindbugs(project)
         applyErrorprone(project)
         applyLicence(project)
-        PluginMethods.applyJacoco(project)
-        PluginMethods.applySonar(project)
+        applyJacoco(project)
+        applySonar(project)
         PluginMethods.applySharedTestReport(project)
 
         PluginMethods.addGlobalTaskType(project, TagReleaseTask::class.java)
@@ -129,6 +136,43 @@ class IntygPlugin : Plugin<Project> {
                     task.inheritedProperties.put("project_name", "sklintyg")
                     task.inheritedProperties.put("project_url", "https://github.com/sklintyg")
                     task.inheritedProperties.put("year", Calendar.getInstance().get(Calendar.YEAR).toString())
+                }
+            }
+        }
+    }
+
+    private fun applyJacoco(project: Project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG)) {
+            project.pluginManager.apply(JacocoPlugin::class.java)
+
+            with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
+                toolVersion = "0.7.6.201602180812"
+            }
+
+            project.afterEvaluate {
+                tasks.withType(Test::class.java).forEach { task ->
+                    val taskExtension = task.extensions.findByType(JacocoTaskExtension::class.java) ?: throw RuntimeException("No jacoco extension")
+                    taskExtension.destinationFile = file("$buildDir/jacoco/test.exec")
+                }
+            }
+        }
+    }
+
+    private fun applySonar(project: Project) {
+        if (project === project.rootProject) {
+            project.pluginManager.apply(SonarQubePlugin::class.java)
+
+            with(project.extensions.getByType(SonarQubeExtension::class.java)) {
+                properties {
+                    property("sonar.projectName", project.name)
+                    property("sonar.projectKey", project.name)
+                    property("sonar.jacoco.reportPath", "build/jacoco/test.exec")
+                    property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://build-inera.nordicmedtest.se/sonar")
+                    property("sonar.test.exclusions", "src/test/**")
+                    property("sonar.exclusions",
+                            listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",
+                                    "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**", "**/templates.js"))
+                    property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
                 }
             }
         }
