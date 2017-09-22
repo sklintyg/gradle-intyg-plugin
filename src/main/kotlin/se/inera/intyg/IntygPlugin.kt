@@ -199,6 +199,10 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
+    // Add the short name of a task type to the project properties. This makes it possible to refer to the task type without its
+    // fully qualified name and without an import in a (groovy) gradle script using this plugin.
+    // I.e. "task createVersionPropertyFile(type: VersionPropertyFileTask)" instead of
+    //      "task createVersionPropertyFile(type: se.inera.intyg.VersionPropertyFileTask)"
     private fun addGlobalTaskType(project: Project, type: Class<*>) {
         project.extensions.extraProperties.set(type.simpleName, type)
     }
