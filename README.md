@@ -1,6 +1,10 @@
 # Intyg Gradle Plugin
 Gradle plugin för att användas av de övriga intygsprojekten under [SKL Intyg](http://github.com/sklintyg) vid byggen.
 
+
+## Dokumenatation
+För att uppdatera license-headers i källkodsfiler: **gradle licenseFormat -PcodeQuality**
+
 ## Licens
 Copyright (C) 2016 Inera AB (http://www.inera.se)
 
