@@ -8,12 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.plugins.quality.Checkstyle
-import org.gradle.api.plugins.quality.CheckstyleExtension
-import org.gradle.api.plugins.quality.CheckstylePlugin
-import org.gradle.api.plugins.quality.FindBugs
-import org.gradle.api.plugins.quality.FindBugsExtension
-import org.gradle.api.plugins.quality.FindBugsPlugin
+import org.gradle.api.plugins.quality.*
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
@@ -24,8 +19,7 @@ import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
 import java.io.FileInputStream
-import java.util.Calendar
-import java.util.Properties
+import java.util.*
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
@@ -127,8 +121,10 @@ class IntygPlugin : Plugin<Project> {
                 strictCheck = true
                 header = null
                 headerURI = IntygPlugin::class.java.getResource("/license/header.txt").toURI()
-                includePatterns = setOf("**/*.java")
+                includePatterns = setOf("**/*.java", "**/*.groovy", "**/*.js")
                 mapping("java", "SLASHSTAR_STYLE")
+                mapping("groovy", "SLASHSTAR_STYLE")
+                mapping("js", "SLASHSTAR_STYLE")
             }
 
             project.afterEvaluate {
