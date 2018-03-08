@@ -1,5 +1,6 @@
 package se.inera.intyg
 
+import com.github.spotbugs.SpotBugsExtension
 import net.ltgt.gradle.errorprone.ErrorProneBasePlugin
 import nl.javadude.gradle.plugins.license.License
 import nl.javadude.gradle.plugins.license.LicenseExtension
@@ -8,7 +9,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.plugins.quality.*
+import org.gradle.api.plugins.quality.Checkstyle
+import org.gradle.api.plugins.quality.CheckstyleExtension
+import org.gradle.api.plugins.quality.CheckstylePlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
@@ -19,11 +22,15 @@ import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
 import java.io.FileInputStream
-import java.util.*
+import java.util.Calendar
+import java.util.Properties
+import com.github.spotbugs.SpotBugsPlugin
+import com.github.spotbugs.SpotBugsTask
+
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
-val FINDBUGS_EXCLUDE = "findbugsExclude"
+val SPOTBUGS_EXCLUDE = "spotbugsExclude"
 val ERRORPRONE_EXCLUDE = "errorproneExclude"
 
 class IntygPlugin : Plugin<Project> {
@@ -34,7 +41,7 @@ class IntygPlugin : Plugin<Project> {
         project.pluginManager.apply(JavaPlugin::class.java)
 
         applyCheckstyle(project)
-        applyFindbugs(project)
+        applySpotbugs(project)
         applyErrorprone(project)
         applyLicence(project)
         applyJacoco(project)
@@ -66,12 +73,12 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
-    private fun applyFindbugs(project: Project) {
-        if (project.hasProperty(CODE_QUALITY_FLAG) && useFindbugs(project)) {
-            project.pluginManager.apply(FindBugsPlugin::class.java)
+    private fun applySpotbugs(project: Project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && useSpotbugs(project)) {
+            project.pluginManager.apply(SpotBugsPlugin::class.java)
 
-            with(project.extensions.getByType(FindBugsExtension::class.java)) {
-                includeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/findbugs/findbugsIncludeFilter.xml")
+            with(project.extensions.getByType(SpotBugsExtension::class.java)) {
+                includeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsIncludeFilter.xml")
                 isIgnoreFailures = false
                 effort = "max"
                 reportLevel = "low"
@@ -79,7 +86,7 @@ class IntygPlugin : Plugin<Project> {
             }
 
             project.afterEvaluate {
-                tasks.withType(FindBugs::class.java).forEach { task ->
+                tasks.withType(SpotBugsTask::class.java).forEach { task ->
                     task.classes = task.classes.filter { clazz ->
                         // There are sometimes text files in the build directory and these can obviously not be examined as java classes.
                         !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
@@ -90,6 +97,7 @@ class IntygPlugin : Plugin<Project> {
                     }
                 }
             }
+
         }
     }
 
@@ -206,9 +214,9 @@ class IntygPlugin : Plugin<Project> {
     private fun getPluginJarPath(project: Project) =
             project.rootProject.buildscript.configurations.getByName("classpath").filter { it.name.contains(PLUGIN_NAME) }.asPath
 
-    private fun useFindbugs(project: Project) =
-            !(project.rootProject.hasProperty(FINDBUGS_EXCLUDE) &&
-                    project.name.matches((project.rootProject.property(FINDBUGS_EXCLUDE) as String).toRegex()))
+    private fun useSpotbugs(project: Project) =
+            !(project.rootProject.hasProperty(SPOTBUGS_EXCLUDE) &&
+                    project.name.matches((project.rootProject.property(SPOTBUGS_EXCLUDE) as String).toRegex()))
 
     private fun useErrorprone(project: Project) =
             !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE) &&

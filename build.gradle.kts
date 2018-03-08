@@ -57,6 +57,7 @@ dependencies {
     compile("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
     compile("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
     compile("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5")
+    compile("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.1")
 }
 
 repositories {
