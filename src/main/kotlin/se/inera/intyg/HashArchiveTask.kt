@@ -42,18 +42,22 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import java.util.zip.ZipInputStream
 
-open class ArchiveTask : DefaultTask() {
+open class HashArchiveTask : DefaultTask() {
 
     @Input lateinit var from: String
     @Input lateinit var archiveName: String
     @Input lateinit var archivePath: String
 
     init {
-        description = "Archive content and create archive checksum file."
+        description = """
+            Calculates a hash from all files under folder specified by 'from' property.
+            If hash differs from last run, folder content will be zipped and the digest
+            file updated with new hash.
+            """.trimIndent()
     }
 
     @TaskAction
-    fun archive() {
+    fun hashAndArchive() {
         val baseDir = File("${project.projectDir}")
         val fromDir = baseDir.resolve(from)
 
@@ -76,16 +80,16 @@ open class ArchiveTask : DefaultTask() {
 
         // 3. If checksums differ then create a new zip file
         if (isUpToDate) {
-            println("the content under \'${from}\' is unchanged, no need to create a new archive")
+            println("Content under \'${from}\' is unchanged, no need to create a new archive")
         } else {
-            zipAll(fromDir, destinationFile.getAbsolutePath(), includeHiddenFiles)
+            zipDirectory(fromDir, destinationFile.getAbsolutePath(), includeHiddenFiles)
             digestFile.writeText(hash)
-            println("the content under \'${from}\' has been changed, a new archive has been created and the digest file updated")
+            println("Content under \'${from}\' has been changed, a new archive has been created and the digest file updated")
         }
     }
 
     @Throws(IOException::class)
-    fun hashDirectory(directory: File, includeHiddenFiles: Boolean): String {
+    private fun hashDirectory(directory: File, includeHiddenFiles: Boolean): String {
         if (!directory.isDirectory()) {
             throw IllegalArgumentException("Not a directory")
         }
@@ -116,7 +120,7 @@ open class ArchiveTask : DefaultTask() {
         }
     }
 
-    fun zipAll(directory: File, zipFile: String, includeHiddenFiles: Boolean) {
+    private fun zipDirectory(directory: File, zipFile: String, includeHiddenFiles: Boolean) {
         if (!directory.isDirectory()) {
             throw IllegalArgumentException("Not a directory")
         }
