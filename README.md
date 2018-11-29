@@ -3,7 +3,50 @@ Gradle plugin för att användas av de övriga intygsprojekten under [SKL Intyg]
 
 
 ## Dokumenatation
-För att uppdatera license-headers i källkodsfiler: **gradle licenseFormat -PcodeQuality**
+
+##### Uppdatera license-headers i källkodsfiler 
+
+    $ gradle licenseFormat -PcodeQuality
+    
+##### Publisera till release repo
+
+    $ gradle publish
+    
+För att kunna publisera till release repot behöver användarnamn och lösenord först sättas
+via systemvariablerna **nexusUsername** och **nexusPassword**        
+
+##### Publisera till lokalt repo:
+
+    $ gradle publishToMavenLocal    
+
+Men innan publisering till lokalt repo behöver några justering göras:
+
+I **build.gradle.kt** behöver man ändra versionsnummer
+ 
+    version = System.getProperty("buildVersion") ?: "1.1-SNAPSHOT"
+
+ Observera att det står 1.1-SNAPSHOT men av någon anledning går det inta att publisera snapshot för en plugin.
+ Så använd "1.1" istället för "1.1-SNAPSHOT"
+
+Sedan behöver rätt version sättas i projektets root **build.gradle** fil så att önskad plugin-version används. 
+
+    plugins {
+        //id "se.inera.intyg.plugin.common" version "1.0.63" apply false
+        id "se.inera.intyg.plugin.common" version "1.1" apply false
+        id "org.akhikhl.gretty" version "1.4.2" apply false
+        id "com.moowork.node" version "1.1.1" apply false
+    } 
+
+Och för att Gradle ska hitta vår plugin i vårt lokala repo behövs också kommenteringen för _mavenLocal()_ tas bort
+i projektets **settings.gradle** file.
+
+    pluginManagement {
+        repositories {
+            //mavenLocal()
+            maven { url "https://build-inera.nordicmedtest.se/nexus/repository/releases/" }
+            gradlePluginPortal()
+        }
+    }
 
 ## Licens
 Copyright (C) 2016 Inera AB (http://www.inera.se)

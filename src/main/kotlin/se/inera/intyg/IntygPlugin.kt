@@ -51,6 +51,7 @@ class IntygPlugin : Plugin<Project> {
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
+        addGlobalTaskType(project, ArchiveTask::class.java)
     }
 
     private fun applyCheckstyle(project: Project) {
