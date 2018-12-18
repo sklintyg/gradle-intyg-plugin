@@ -42,6 +42,7 @@ i projektets **settings.gradle** file.
 
     pluginManagement {
         repositories {
+            // Uncomment line below during development of gradle-intyg-plugin
             //mavenLocal()
             maven { url "https://build-inera.nordicmedtest.se/nexus/repository/releases/" }
             gradlePluginPortal()

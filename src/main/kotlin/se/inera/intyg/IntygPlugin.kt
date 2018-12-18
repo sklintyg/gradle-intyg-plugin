@@ -1,10 +1,14 @@
 package se.inera.intyg
 
 import com.github.spotbugs.SpotBugsExtension
+import com.github.spotbugs.SpotBugsPlugin
+import com.github.spotbugs.SpotBugsTask
 import net.ltgt.gradle.errorprone.ErrorProneBasePlugin
 import nl.javadude.gradle.plugins.license.License
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import nl.javadude.gradle.plugins.license.LicensePlugin
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
@@ -20,13 +24,13 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
-import java.io.File
 import java.io.FileInputStream
-import java.util.Calendar
-import java.util.Properties
-import com.github.spotbugs.SpotBugsPlugin
-import com.github.spotbugs.SpotBugsTask
-
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+import java.nio.file.attribute.PosixFilePermission
+import java.util.*
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 val CODE_QUALITY_FLAG = "codeQuality"
@@ -40,6 +44,7 @@ class IntygPlugin : Plugin<Project> {
 
         project.pluginManager.apply(JavaPlugin::class.java)
 
+        applyGitHooks(project)
         applyCheckstyle(project)
         applySpotbugs(project)
         applyErrorprone(project)
@@ -204,6 +209,45 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
+    private fun applyGitHooks(project: Project) {
+        if (isRootProject(project)) {
+            val repository = findGitRepository(project.rootProject.projectDir);
+            val commitMsg = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/commit-msg")
+            val preCommit = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/pre-commit")
+
+            val toDir = Paths.get(repository.directory.path, "hooks")
+
+            if (!Files.exists(toDir)) {
+                Files.createDirectory(toDir)
+            }
+
+            copyFile(commitMsg.asFile(), toDir)
+            copyFile(preCommit.asFile(), toDir)
+        }
+    }
+
+    private fun copyFile(sourceFile: java.io.File, destinationDir: Path) {
+        if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
+            Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+
+            val pfpSet = hashSetOf(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.OWNER_EXECUTE,
+                    PosixFilePermission.GROUP_READ,
+                    PosixFilePermission.GROUP_EXECUTE,
+                    PosixFilePermission.OTHERS_READ,
+                    PosixFilePermission.OTHERS_EXECUTE)
+
+            // Assign permissions (chmod 755).
+            Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), pfpSet)
+        }
+    }
+
+    private fun isRootProject(project: Project) : Boolean {
+        return project.rootDir.path.equals(project.projectDir.path)
+    }
+
     // Add the short name of a task type to the project properties. This makes it possible to refer to the task type without its
     // fully qualified name and without an import in a (groovy) gradle script using this plugin.
     // I.e. "task createVersionPropertyFile(type: VersionPropertyFileTask)" instead of
@@ -213,7 +257,8 @@ class IntygPlugin : Plugin<Project> {
     }
 
     private fun getPluginJarPath(project: Project) =
-            project.rootProject.buildscript.configurations.getByName("classpath").filter { it.name.contains(PLUGIN_NAME) }.asPath
+            project.rootProject.buildscript.configurations.getByName("classpath")
+                    .filter { it.name.contains(PLUGIN_NAME) }.asPath
 
     private fun useSpotbugs(project: Project) =
             !(project.rootProject.hasProperty(SPOTBUGS_EXCLUDE) &&
@@ -225,7 +270,7 @@ class IntygPlugin : Plugin<Project> {
 
 }
 
-fun addProjectPropertiesFromFile(project: Project, propfile: File) {
+fun addProjectPropertiesFromFile(project: Project, propfile: java.io.File) {
     val props = Properties()
     props.load(FileInputStream(propfile))
     project.allprojects.forEach { subProject ->
@@ -244,3 +289,12 @@ fun findResolvedVersion(project: Project, groupName: String): String {
     }
     throw RuntimeException("No group with name $groupName found in project ${project.name}")
 }
+
+fun findGitRepository(rootDirectory: java.io.File): Repository {
+    val repository = FileRepositoryBuilder()
+            .findGitDir(rootDirectory)!!
+            .apply { gitDir ?: throw Exception("Project must be in a git directory for git-hooks to work. Recommended solution: git init") }
+            .build()!!
+    return repository;
+}
+
