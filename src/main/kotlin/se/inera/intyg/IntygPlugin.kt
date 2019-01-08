@@ -234,7 +234,7 @@ class IntygPlugin : Plugin<Project> {
             if (supportedAttr.contains("posix")) {
                 // Underliggande system stödjer POSIX
                 // Assign permissions (chmod 755).
-                val perms = PosixFilePermissions.fromString("rwxr-xr-x");
+                val perms = PosixFilePermissions.fromString("rwxr-xr-x")
                 Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), perms)
             } else {
                 val file = destinationDir.resolve(sourceFile.name).toFile()
