@@ -29,7 +29,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
@@ -230,17 +230,18 @@ class IntygPlugin : Plugin<Project> {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
             Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
 
-            val pfpSet = hashSetOf(
-                    PosixFilePermission.OWNER_READ,
-                    PosixFilePermission.OWNER_WRITE,
-                    PosixFilePermission.OWNER_EXECUTE,
-                    PosixFilePermission.GROUP_READ,
-                    PosixFilePermission.GROUP_EXECUTE,
-                    PosixFilePermission.OTHERS_READ,
-                    PosixFilePermission.OTHERS_EXECUTE)
-
-            // Assign permissions (chmod 755).
-            Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), pfpSet)
+            val supportedAttr = destinationDir.getFileSystem().supportedFileAttributeViews();
+            if (supportedAttr.contains("posix")) {
+                // Underliggande system stödjer POSIX
+                // Assign permissions (chmod 755).
+                val perms = PosixFilePermissions.fromString("rwxr-xr-x");
+                Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), perms)
+            } else {
+                val file = destinationDir.resolve(sourceFile.name).toFile()
+                file.setReadable(true, false)       // Everyone can read
+                file.setWritable(true, true)        // Only the owner can write
+                file.setExecutable(true, false)   // Everyone can execute
+            }
         }
     }
 
