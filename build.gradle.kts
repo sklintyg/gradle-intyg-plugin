@@ -27,6 +27,9 @@ gradlePlugin {
     }
 }
 
+/*
+ * SHOULD BE REMOVED IN NEXT RELEASE
+ *
 task("tagRelease") {
     description = "Tags the current head with the projects version."
     doLast {
@@ -36,6 +39,7 @@ task("tagRelease") {
                 .setPushTags().call()
     }
 }
+*/
 
 publishing {
     repositories {
