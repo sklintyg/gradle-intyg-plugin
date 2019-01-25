@@ -55,7 +55,7 @@ dependencies {
     implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
     implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
-    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5")
+    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7")
     implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9")
 }
 
