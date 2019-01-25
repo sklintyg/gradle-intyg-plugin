@@ -4,23 +4,24 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.jetbrains.kotlin.javax.inject.Inject
 
 plugins {
+    maven
     `maven-publish`
     `java-gradle-plugin`
-    `kotlin-dsl`
+    kotlin("jvm") version "1.3.20"
 
-    id("org.ajoberstar.grgit") version "2.0.1"
+    id("org.ajoberstar.grgit") version "3.0.0"
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "1.1-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "2.0.1-SNAPSHOT"
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions { jvmTarget = "1.8" }
 }
 
 gradlePlugin {
-    (plugins) {
-        "intygPlugin" {
+    plugins {
+        create("intygPlugin") {
             id = "se.inera.intyg.plugin.common"
             implementationClass = "se.inera.intyg.IntygPlugin"
         }
@@ -50,18 +51,16 @@ publishing {
 }
 
 dependencies {
-    val kotlinVersion = "1.1.4-3"
-
-    compile(kotlin("stdlib", kotlinVersion))
-    compile(kotlin("stdlib-jre8", kotlinVersion))
-    compile("org.ajoberstar:grgit:1.9.0")
-    compile("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
-    compile("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
-    compile("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5")
-    compile("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.1")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
+    implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
+    implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
+    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5")
+    implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9")
 }
 
 repositories {
     maven("https://plugins.gradle.org/m2/")
+    mavenLocal()
     mavenCentral()
 }

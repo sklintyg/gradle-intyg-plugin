@@ -19,25 +19,12 @@
 
 package se.inera.intyg
 
-import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Zip
-
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
-
-import java.nio.file.Files
-
 import java.util.concurrent.TimeUnit
-
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
-import java.util.zip.ZipInputStream
 
 open class ArchiveDirectoryTask : Zip() {
 
@@ -47,7 +34,7 @@ open class ArchiveDirectoryTask : Zip() {
             from(value)
         }
 
-    @Input var archiveOnlyIfDiff: Boolean = false;
+    @Input var archiveOnlyIfDiff: Boolean = false
 
     init {
         description = """
@@ -68,15 +55,15 @@ open class ArchiveDirectoryTask : Zip() {
             val result = command.runCommand()
 
             if (result!!.isNullOrBlank()) {
-                println("Content under \'${sourcePath}\' is unchanged, no need to create a new archive.")
+                println("Content under \'$sourcePath\' is unchanged, no need to create a new archive.")
             } else {
                 super.copy()
-                println("Content under \'${sourcePath}\' has been changed, a new archive has been created ${archivePath}")
+                println("Content under \'$sourcePath\' has been changed, a new archive has been created $archiveFileName")
                 println(result)
             }
         } else {
             super.copy()
-            println("Content under \'${sourcePath}\' has been archived to ${archivePath}")
+            println("Content under \'$sourcePath\' has been archived to $archiveFile")
         }
 
     }

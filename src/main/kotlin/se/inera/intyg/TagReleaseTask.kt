@@ -1,10 +1,10 @@
 package se.inera.intyg
 
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.impldep.org.eclipse.jgit.api.Git
+import org.gradle.internal.impldep.org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import org.gradle.internal.impldep.org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 
 open class TagReleaseTask : DefaultTask() {
@@ -22,5 +22,4 @@ open class TagReleaseTask : DefaultTask() {
                     System.getProperty("githubUser"), System.getProperty("githubPassword"))).setPushTags().call()
         }
     }
-
 }

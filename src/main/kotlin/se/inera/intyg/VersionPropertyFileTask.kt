@@ -1,16 +1,15 @@
 package se.inera.intyg
 
-import org.eclipse.jgit.lib.Constants.HEAD
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.impldep.org.eclipse.jgit.lib.Constants.HEAD
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.text.DateFormat
-import java.util.Date
-import java.util.Properties
+import java.util.*
 
 open class VersionPropertyFileTask : DefaultTask() {
     private val projectVersion = project.version.toString()
