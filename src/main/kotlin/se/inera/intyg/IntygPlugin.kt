@@ -136,6 +136,7 @@ class IntygPlugin : Plugin<Project> {
                     val jTask = it as JavaCompile
                     jTask.toolChain = net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
                     jTask.options.compilerArgs.addAll(listOf(
+                            "-XepExcludedPaths:.*AutoValue_.+",
                             "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
                             "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
                             "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
