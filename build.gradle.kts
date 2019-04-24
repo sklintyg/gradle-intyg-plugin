@@ -1,22 +1,23 @@
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.jetbrains.kotlin.javax.inject.Inject
 
 plugins {
     maven
     `maven-publish`
     `java-gradle-plugin`
-    kotlin("jvm") version "1.3.20"
+    kotlin("jvm") version "1.3.30"
 
     id("org.ajoberstar.grgit") version "3.0.0"
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "2.1.0-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "3.1.0-SNAPSHOT"
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions { jvmTarget = "1.8" }
+tasks {
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions { jvmTarget = "1.8" }
+    }
 }
 
 gradlePlugin {
@@ -54,7 +55,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
     implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
-    implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
+    implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0")
     implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7")
     implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9")
 }

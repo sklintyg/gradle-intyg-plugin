@@ -14,7 +14,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.Checkstyle
-import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.plugins.quality.CheckstylePlugin
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
@@ -33,10 +32,10 @@ import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
 
-val PLUGIN_NAME = "se.inera.intyg.plugin.common"
-val CODE_QUALITY_FLAG = "codeQuality"
-val SPOTBUGS_EXCLUDE = "spotbugsExclude"
-val ERRORPRONE_EXCLUDE = "errorproneExclude"
+const val PLUGIN_NAME = "se.inera.intyg.plugin.common"
+const val CODE_QUALITY_FLAG = "codeQuality"
+const val SPOTBUGS_EXCLUDE = "spotbugsExclude"
+const val ERRORPRONE_EXCLUDE = "errorproneExclude"
 
 class IntygPlugin : Plugin<Project> {
 
@@ -47,10 +46,10 @@ class IntygPlugin : Plugin<Project> {
 
         applyGitHooks(project)
         applyCheckstyle(project)
-        applySpotbugs(project)
-        applyErrorprone(project)
+//        applySpotbugs(project)
+//        applyErrorprone(project)
         applyLicence(project)
-        applyJacoco(project)
+//        applyJacoco(project)
         applySonar(project)
         applySharedTestReport(project)
         applyVersionPropertyFile(project)
@@ -79,17 +78,20 @@ class IntygPlugin : Plugin<Project> {
 
     private fun applyCheckstyle(project: Project) {
         project.pluginManager.apply(CheckstylePlugin::class.java)
-
-        with(project.extensions.getByType(CheckstyleExtension::class.java)) {
-            config = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/checkstyle/checkstyle.xml")
-            configProperties = mapOf("package_name" to project.rootProject.name)
-            isIgnoreFailures = false
-            isShowViolations = true
-        }
+        val extension = project.extensions.create("intygPluginCheckstyle", IntygPluginCheckstyleExtension::class.java)
 
         project.afterEvaluate {
             it.getTasksByName("checkstyleMain", false).forEach { task ->
                 val csTask = task as Checkstyle
+
+
+              val fileName = extension.javaVersion!!.checkstyleConfigName
+
+              csTask.config = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/checkstyle/$fileName")
+
+                csTask.configProperties = mapOf("package_name" to project.rootProject.name)
+                csTask.isIgnoreFailures = extension.ignoreFailures!!
+                csTask.isShowViolations = extension.showViolations!!
                 csTask.setSource("src/main/java") // Explicitly disable generated code
                 csTask.onlyIf { project.hasProperty(CODE_QUALITY_FLAG) }
             }
@@ -153,8 +155,9 @@ class IntygPlugin : Plugin<Project> {
                 strictCheck = true
                 header = null
                 headerURI = IntygPlugin::class.java.getResource("/license/header.txt").toURI()
-                includePatterns = setOf("**/*.java", "**/*.groovy", "**/*.js")
+                includePatterns = setOf("**/*.java", "**/*.kt", "**/*.groovy", "**/*.js")
                 mapping("java", "SLASHSTAR_STYLE")
+                mapping("kotlin", "SLASHSTAR_STYLE")
                 mapping("groovy", "SLASHSTAR_STYLE")
                 mapping("js", "SLASHSTAR_STYLE")
             }
@@ -230,7 +233,7 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
-    private fun copyFile(sourceFile: java.io.File, destinationDir: Path) {
+    private fun copyFile(sourceFile: File, destinationDir: Path) {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
             Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
 
@@ -275,7 +278,7 @@ class IntygPlugin : Plugin<Project> {
 
 }
 
-fun addProjectPropertiesFromFile(project: Project, propfile: java.io.File) {
+fun addProjectPropertiesFromFile(project: Project, propfile: File) {
     val props = Properties()
     props.load(FileInputStream(propfile))
     project.allprojects.forEach { subProject ->
@@ -295,7 +298,7 @@ fun findResolvedVersion(project: Project, groupName: String): String {
     throw RuntimeException("No group with name $groupName found in project ${project.name}")
 }
 
-fun findGitRepository(rootDirectory: java.io.File): Repository {
+fun findGitRepository(rootDirectory: File): Repository {
     val repository = FileRepositoryBuilder()
             .findGitDir(rootDirectory)!!
             .apply { gitDir ?: throw Exception("Project must be in a git directory for git-hooks to work. Recommended solution: git init") }
