@@ -4,6 +4,7 @@ import com.github.spotbugs.SpotBugsExtension
 import com.github.spotbugs.SpotBugsPlugin
 import com.github.spotbugs.SpotBugsTask
 import net.ltgt.gradle.errorprone.ErrorProneBasePlugin
+import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import nl.javadude.gradle.plugins.license.License
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import nl.javadude.gradle.plugins.license.LicensePlugin
@@ -46,7 +47,7 @@ class IntygPlugin : Plugin<Project> {
 
         applyGitHooks(project)
         applyCheckstyle(project)
-//        applySpotbugs(project)
+        applySpotbugs(project)
 //        applyErrorprone(project)
         applyLicence(project)
 //        applyJacoco(project)
@@ -105,8 +106,10 @@ class IntygPlugin : Plugin<Project> {
 
             with(project.extensions.getByType(SpotBugsExtension::class.java)) {
                 includeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsIncludeFilter.xml")
+                excludeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsExcludeFilter.xml")
                 isIgnoreFailures = false
                 effort = "max"
+                toolVersion = "3.1.12"
                 reportLevel = "low"
                 sourceSets = setOf(project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName("main"))
             }
@@ -129,7 +132,7 @@ class IntygPlugin : Plugin<Project> {
 
     private fun applyErrorprone(project: Project) {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
-            project.pluginManager.apply(ErrorProneBasePlugin::class.java)
+            project.pluginManager.apply(ErrorPronePlugin::class.java)
 
             project.afterEvaluate {
                 it.getTasksByName("compileJava", false).forEach {
@@ -226,11 +229,11 @@ class IntygPlugin : Plugin<Project> {
     }
 
     private fun applyVersionPropertyFile(project: Project) {
-        project.afterEvaluate { project ->
-            project.tasks.withType(VersionPropertyFileTask::class.java)
-               .forEach { it.dependsOn(project.getTasksByName("processResources", false)) }
-            project.tasks.withType(Jar::class.java)
-               .forEach { it.dependsOn(project.tasks.withType(VersionPropertyFileTask::class.java)) }
+        project.afterEvaluate { p ->
+            p.tasks.withType(VersionPropertyFileTask::class.java)
+               .forEach { it.dependsOn(p.getTasksByName("processResources", false)) }
+            p.tasks.withType(Jar::class.java)
+               .forEach { it.dependsOn(p.tasks.withType(VersionPropertyFileTask::class.java)) }
         }
     }
 
@@ -238,7 +241,7 @@ class IntygPlugin : Plugin<Project> {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
             Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
 
-            val supportedAttr = destinationDir.getFileSystem().supportedFileAttributeViews();
+            val supportedAttr = destinationDir.fileSystem.supportedFileAttributeViews()
             if (supportedAttr.contains("posix")) {
                 // Underliggande system stödjer POSIX
                 // Assign permissions (chmod 755).

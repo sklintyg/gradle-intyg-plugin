@@ -56,13 +56,10 @@ dependencies {
   implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7")
-  implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9")
-  implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0")
-}
-
-configurations.all {
-  resolutionStrategy {
-    force("org.springframework:spring-core:5.1.6.RELEASE")
+  implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.7.1")
+  implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
+  implementation("org.springframework:spring-core:5.1.6.RELEASE") {
+    isForce = true
   }
 }
 
