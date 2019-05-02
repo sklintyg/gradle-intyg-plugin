@@ -3,8 +3,8 @@ package se.inera.intyg
 import com.github.spotbugs.SpotBugsExtension
 import com.github.spotbugs.SpotBugsPlugin
 import com.github.spotbugs.SpotBugsTask
-import net.ltgt.gradle.errorprone.ErrorProneBasePlugin
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
+import net.ltgt.gradle.errorprone.errorprone
 import nl.javadude.gradle.plugins.license.License
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import nl.javadude.gradle.plugins.license.LicensePlugin
@@ -48,9 +48,9 @@ class IntygPlugin : Plugin<Project> {
         applyGitHooks(project)
         applyCheckstyle(project)
         applySpotbugs(project)
-//        applyErrorprone(project)
+        applyErrorprone(project)
         applyLicence(project)
-//        applyJacoco(project)
+        applyJacoco(project)
         applySonar(project)
         applySharedTestReport(project)
         applyVersionPropertyFile(project)
@@ -134,11 +134,11 @@ class IntygPlugin : Plugin<Project> {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
             project.pluginManager.apply(ErrorPronePlugin::class.java)
 
-            project.afterEvaluate {
-                it.getTasksByName("compileJava", false).forEach {
+            project.afterEvaluate { theProject ->
+                theProject.getTasksByName("compileJava", false).forEach {
                     val jTask = it as JavaCompile
-                    jTask.toolChain = net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
-                    jTask.options.compilerArgs.addAll(listOf(
+//                    jTask.toolChain = net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
+                    jTask.options.errorprone.errorproneArgs.addAll(listOf(
                             "-XepExcludedPaths:.*AutoValue_.+",
                             "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
                             "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
@@ -182,7 +182,7 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(JacocoPlugin::class.java)
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
-                toolVersion = "0.7.6.201602180812"
+                toolVersion = "0.8.3"
             }
 
             project.afterEvaluate {
@@ -277,8 +277,8 @@ class IntygPlugin : Plugin<Project> {
                     project.name.matches((project.rootProject.property(SPOTBUGS_EXCLUDE) as String).toRegex()))
 
     private fun useErrorprone(project: Project) =
-            !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE) &&
-                    project.name.matches((project.rootProject.property(ERRORPRONE_EXCLUDE) as String).toRegex()))
+            !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE))
+               // && project.name.matches((project.rootProject.property(ERRORPRONE_EXCLUDE) as String).toRegex()))
 
 }
 

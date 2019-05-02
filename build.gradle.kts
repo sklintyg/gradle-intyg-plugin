@@ -16,7 +16,9 @@ version = System.getProperty("buildVersion") ?: "3.1.0-SNAPSHOT"
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions { jvmTarget = "1.8" }
+    kotlinOptions {
+      jvmTarget = "1.8"
+    }
   }
 }
 
@@ -54,7 +56,8 @@ publishing {
 dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.8")
+  implementation("com.google.errorprone:error_prone_core:2.3.3")
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7")
   implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.7.1")
   implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
