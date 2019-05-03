@@ -6,7 +6,7 @@ plugins {
   maven
   `maven-publish`
   `java-gradle-plugin`
-  kotlin("jvm") version "1.3.30"
+  kotlin("jvm") version "1.3.31"
 
   id("org.ajoberstar.grgit") version "3.0.0"
 }
@@ -55,6 +55,7 @@ publishing {
 
 dependencies {
   implementation(kotlin("stdlib-jdk8"))
+  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.0.0-RC14")
   implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.8")
   implementation("com.google.errorprone:error_prone_core:2.3.3")

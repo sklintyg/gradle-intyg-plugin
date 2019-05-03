@@ -3,6 +3,8 @@ package se.inera.intyg
 import com.github.spotbugs.SpotBugsExtension
 import com.github.spotbugs.SpotBugsPlugin
 import com.github.spotbugs.SpotBugsTask
+import io.gitlab.arturbosch.detekt.DetektPlugin
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import net.ltgt.gradle.errorprone.errorprone
 import nl.javadude.gradle.plugins.license.License
@@ -35,6 +37,7 @@ import java.util.*
 
 const val PLUGIN_NAME = "se.inera.intyg.plugin.common"
 const val CODE_QUALITY_FLAG = "codeQuality"
+const val DETEKT_FLAG = "detekt"
 const val SPOTBUGS_EXCLUDE = "spotbugsExclude"
 const val ERRORPRONE_EXCLUDE = "errorproneExclude"
 
@@ -48,6 +51,7 @@ class IntygPlugin : Plugin<Project> {
         applyGitHooks(project)
         applyCheckstyle(project)
         applySpotbugs(project)
+        applyDetekt(project)
         applyErrorprone(project)
         applyLicence(project)
         applyJacoco(project)
@@ -62,7 +66,7 @@ class IntygPlugin : Plugin<Project> {
 
     private fun applyGitHooks(project: Project) {
         if (isRootProject(project)) {
-            val repository = findGitRepository(project.rootProject.projectDir);
+            val repository = findGitRepository(project.rootProject.projectDir)
             val commitMsg = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/commit-msg")
             val preCommit = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/pre-commit")
 
@@ -85,10 +89,9 @@ class IntygPlugin : Plugin<Project> {
             it.getTasksByName("checkstyleMain", false).forEach { task ->
                 val csTask = task as Checkstyle
 
+                val fileName = extension.javaVersion!!.checkstyleConfigName
 
-              val fileName = extension.javaVersion!!.checkstyleConfigName
-
-              csTask.config = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/checkstyle/$fileName")
+                csTask.config = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/checkstyle/$fileName")
 
                 csTask.configProperties = mapOf("package_name" to project.rootProject.name)
                 csTask.isIgnoreFailures = extension.ignoreFailures!!
@@ -114,8 +117,8 @@ class IntygPlugin : Plugin<Project> {
                 sourceSets = setOf(project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName("main"))
             }
 
-            project.afterEvaluate {
-                it.tasks.withType(SpotBugsTask::class.java).forEach { task ->
+            project.afterEvaluate { evaluatedProject ->
+                evaluatedProject.tasks.withType(SpotBugsTask::class.java).forEach { task ->
                     task.classes = task.classes.filter { clazz ->
                         // There are sometimes text files in the build directory and these can obviously not be examined as java classes.
                         !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
@@ -127,6 +130,16 @@ class IntygPlugin : Plugin<Project> {
                 }
             }
 
+        }
+    }
+
+    private fun applyDetekt(project: Project) {
+        if (project.hasProperty(CODE_QUALITY_FLAG) && project.hasProperty(DETEKT_FLAG)) {
+            project.pluginManager.apply(DetektPlugin::class.java)
+
+            with(project.extensions.getByType(DetektExtension::class.java)) {
+                parallel = true
+            }
         }
     }
 
@@ -169,9 +182,9 @@ class IntygPlugin : Plugin<Project> {
             project.afterEvaluate {
                 it.tasks.withType(License::class.java).forEach { task ->
                     task.inheritedProperties = mutableMapOf()
-                    task.inheritedProperties.put("project_name", "sklintyg")
-                    task.inheritedProperties.put("project_url", "https://github.com/sklintyg")
-                    task.inheritedProperties.put("year", Calendar.getInstance().get(Calendar.YEAR).toString())
+                    task.inheritedProperties["project_name"] = "sklintyg"
+                    task.inheritedProperties["project_url"] = "https://github.com/sklintyg"
+                    task.inheritedProperties["year"] = Calendar.getInstance().get(Calendar.YEAR).toString()
                 }
             }
         }
