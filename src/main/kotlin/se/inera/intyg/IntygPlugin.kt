@@ -24,13 +24,12 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
-import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.nio.file.attribute.PosixFilePermissions
+import java.nio.file.attribute.PosixFilePermission
 import java.util.*
 
 val PLUGIN_NAME = "se.inera.intyg.plugin.common"
@@ -61,20 +60,20 @@ class IntygPlugin : Plugin<Project> {
     }
 
     private fun applyGitHooks(project: Project) {
-        if (isRootProject(project)) {
-            val repository = findGitRepository(project.rootProject.projectDir);
-            val commitMsg = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/commit-msg")
-            val preCommit = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/pre-commit")
+      if (isRootProject(project)) {
+        val repository = findGitRepository(project.rootProject.projectDir);
+        val commitMsg = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/commit-msg")
+        val preCommit = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/pre-commit")
 
-            val toDir = Paths.get(repository.directory.path, "hooks")
+        val toDir = Paths.get(repository.directory.path, "hooks")
 
-            if (!Files.exists(toDir)) {
-                Files.createDirectory(toDir)
-            }
-
-            copyFile(commitMsg.asFile(), toDir)
-            copyFile(preCommit.asFile(), toDir)
+        if (!Files.exists(toDir)) {
+          Files.createDirectory(toDir)
         }
+
+        copyFile(commitMsg.asFile(), toDir)
+        copyFile(preCommit.asFile(), toDir)
+      }
     }
 
     private fun applyCheckstyle(project: Project) {
@@ -88,12 +87,12 @@ class IntygPlugin : Plugin<Project> {
         }
 
         project.afterEvaluate {
-            it.getTasksByName("checkstyleMain", false).forEach { task ->
-                val csTask = task as Checkstyle
+            getTasksByName("checkstyleMain", false).forEach {
+                val csTask = it as Checkstyle
                 csTask.setSource("src/main/java") // Explicitly disable generated code
                 csTask.onlyIf { project.hasProperty(CODE_QUALITY_FLAG) }
             }
-            it.getTasksByName("checkstyleTest", false).forEach { task -> task.enabled = false }
+            getTasksByName("checkstyleTest", false).forEach { task -> task.enabled = false }
         }
     }
 
@@ -110,14 +109,14 @@ class IntygPlugin : Plugin<Project> {
             }
 
             project.afterEvaluate {
-                it.tasks.withType(SpotBugsTask::class.java).forEach { task ->
+                tasks.withType(SpotBugsTask::class.java).forEach { task ->
                     task.classes = task.classes.filter { clazz ->
                         // There are sometimes text files in the build directory and these can obviously not be examined as java classes.
                         !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
                     }
                     task.reports {
-                        it.xml.isEnabled = false
-                        it.html.isEnabled = true
+                        xml.isEnabled = false
+                        html.isEnabled = true
                     }
                 }
             }
@@ -130,11 +129,10 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(ErrorProneBasePlugin::class.java)
 
             project.afterEvaluate {
-                it.getTasksByName("compileJava", false).forEach {
+                getTasksByName("compileJava", false).forEach {
                     val jTask = it as JavaCompile
                     jTask.toolChain = net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
                     jTask.options.compilerArgs.addAll(listOf(
-                            "-XepExcludedPaths:.*AutoValue_.+",
                             "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
                             "-Xep:DefaultCharset:ERROR", "-Xep:Finally:ERROR", "-Xep:FunctionalInterfaceClash:ERROR",
                             "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
@@ -162,7 +160,7 @@ class IntygPlugin : Plugin<Project> {
             }
 
             project.afterEvaluate {
-                it.tasks.withType(License::class.java).forEach { task ->
+                tasks.withType(License::class.java).forEach { task ->
                     task.inheritedProperties = mutableMapOf()
                     task.inheritedProperties.put("project_name", "sklintyg")
                     task.inheritedProperties.put("project_url", "https://github.com/sklintyg")
@@ -181,10 +179,9 @@ class IntygPlugin : Plugin<Project> {
             }
 
             project.afterEvaluate {
-                it.tasks.withType(Test::class.java).forEach { task ->
+                tasks.withType(Test::class.java).forEach { task ->
                     val taskExtension = task.extensions.findByType(JacocoTaskExtension::class.java) ?: throw RuntimeException("No jacoco extension")
-                    taskExtension.destinationFile = File("${it.buildDir}/jacoco/test.exec")
-                    taskExtension.destinationFile = File("${it.buildDir}/jacoco/test.exec")
+                    taskExtension.destinationFile = file("$buildDir/jacoco/test.exec")
                 }
             }
         }
@@ -196,15 +193,15 @@ class IntygPlugin : Plugin<Project> {
 
             with(project.extensions.getByType(SonarQubeExtension::class.java)) {
                 properties {
-                    it.property("sonar.projectName", project.name)
-                    it.property("sonar.projectKey", project.name)
-                    it.property("sonar.jacoco.reportPath", "build/jacoco/test.exec")
-                    it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://build-inera.nordicmedtest.se/sonar")
-                    it.property("sonar.test.exclusions", "src/test/**")
-                    it.property("sonar.exclusions",
+                    property("sonar.projectName", project.name)
+                    property("sonar.projectKey", project.name)
+                    property("sonar.jacoco.reportPath", "build/jacoco/test.exec")
+                    property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://build-inera.nordicmedtest.se/sonar")
+                    property("sonar.test.exclusions", "src/test/**")
+                    property("sonar.exclusions",
                             listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",
                                     "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**", "**/templates.js"))
-                    it.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
+                    property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
                 }
             }
         }
@@ -218,17 +215,15 @@ class IntygPlugin : Plugin<Project> {
                 // B/c of a limitation in gradle, we cannot both depend on a task AND finalize it. Therefore we depend
                 // on the output of the test tasks, rather than the test tasks themselves.
                 reportTask.reportOn(project.getTasksByName("test", true).map { task -> (task as Test).binResultsDir })
-                it.tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
+                tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
             }
         }
     }
 
     private fun applyVersionPropertyFile(project: Project) {
-        project.afterEvaluate { project ->
-            project.tasks.withType(VersionPropertyFileTask::class.java)
-               .forEach { it.dependsOn(project.getTasksByName("processResources", false)) }
-            project.tasks.withType(Jar::class.java)
-               .forEach { it.dependsOn(project.tasks.withType(VersionPropertyFileTask::class.java)) }
+        project.afterEvaluate {
+            tasks.withType(VersionPropertyFileTask::class.java).forEach { it.dependsOn(getTasksByName("processResources", false)) }
+            tasks.withType(Jar::class.java).forEach { it.dependsOn(tasks.withType(VersionPropertyFileTask::class.java)) }
         }
     }
 
@@ -236,18 +231,17 @@ class IntygPlugin : Plugin<Project> {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
             Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
 
-            val supportedAttr = destinationDir.getFileSystem().supportedFileAttributeViews();
-            if (supportedAttr.contains("posix")) {
-                // Underliggande system stödjer POSIX
-                // Assign permissions (chmod 755).
-                val perms = PosixFilePermissions.fromString("rwxr-xr-x")
-                Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), perms)
-            } else {
-                val file = destinationDir.resolve(sourceFile.name).toFile()
-                file.setReadable(true, false)       // Everyone can read
-                file.setWritable(true, true)        // Only the owner can write
-                file.setExecutable(true, false)     // Everyone can execute
-            }
+            val pfpSet = hashSetOf(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.OWNER_EXECUTE,
+                    PosixFilePermission.GROUP_READ,
+                    PosixFilePermission.GROUP_EXECUTE,
+                    PosixFilePermission.OTHERS_READ,
+                    PosixFilePermission.OTHERS_EXECUTE)
+
+            // Assign permissions (chmod 755).
+            Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), pfpSet)
         }
     }
 
@@ -301,6 +295,7 @@ fun findGitRepository(rootDirectory: java.io.File): Repository {
     val repository = FileRepositoryBuilder()
             .findGitDir(rootDirectory)!!
             .apply { gitDir ?: throw Exception("Project must be in a git directory for git-hooks to work. Recommended solution: git init") }
-            .build()
-    return repository
+            .build()!!
+    return repository;
 }
+
