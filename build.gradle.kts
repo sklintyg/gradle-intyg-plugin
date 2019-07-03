@@ -8,7 +8,7 @@ plugins {
   `java-gradle-plugin`
   kotlin("jvm") version "1.3.31"
 
-  id("org.ajoberstar.grgit") version "3.0.0"
+  id("org.ajoberstar.grgit") version "3.1.1"
 }
 
 group = "se.inera.intyg.plugin.common"
@@ -55,16 +55,17 @@ publishing {
 
 dependencies {
   implementation(kotlin("stdlib-jdk8"))
-  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.0.0-RC14")
-  implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.8")
+  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.1.0")
+  implementation("org.ajoberstar.grgit:grgit-core:3.1.1")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.8.1")
   implementation("com.google.errorprone:error_prone_core:2.3.3")
-  implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7")
-  implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.7.1")
+  implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8")
+  implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:2.0.0")
   implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
-  implementation("org.springframework:spring-core:5.1.6.RELEASE") {
+  implementation("org.springframework:spring-core:5.1.10.RELEASE") {
     isForce = true
   }
+  implementation("org.owasp:dependency-check-gradle:5.2.2")
 }
 
 repositories {

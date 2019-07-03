@@ -24,6 +24,7 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
@@ -58,10 +59,10 @@ class IntygPlugin : Plugin<Project> {
         applySonar(project)
         applySharedTestReport(project)
         applyVersionPropertyFile(project)
+        applyOwasp(project)
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
-        addGlobalTaskType(project, ArchiveDirectoryTask::class.java)
     }
 
     private fun applyGitHooks(project: Project) {
@@ -247,6 +248,12 @@ class IntygPlugin : Plugin<Project> {
                .forEach { it.dependsOn(p.getTasksByName("processResources", false)) }
             p.tasks.withType(Jar::class.java)
                .forEach { it.dependsOn(p.tasks.withType(VersionPropertyFileTask::class.java)) }
+        }
+    }
+
+    private fun applyOwasp(project: Project) {
+        if (project === project.rootProject) {
+            project.pluginManager.apply(DependencyCheckPlugin::class.java)
         }
     }
 
