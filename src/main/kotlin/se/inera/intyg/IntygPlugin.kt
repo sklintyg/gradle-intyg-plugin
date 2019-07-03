@@ -177,7 +177,7 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(JacocoPlugin::class.java)
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
-                toolVersion = "0.7.6.201602180812"
+                toolVersion = "0.8.3"
             }
 
             project.afterEvaluate {
@@ -224,11 +224,11 @@ class IntygPlugin : Plugin<Project> {
     }
 
     private fun applyVersionPropertyFile(project: Project) {
-        project.afterEvaluate { project ->
-            project.tasks.withType(VersionPropertyFileTask::class.java)
-                .forEach { it.dependsOn(project.getTasksByName("processResources", false)) }
-            project.tasks.withType(Jar::class.java)
-                .forEach { it.dependsOn(project.tasks.withType(VersionPropertyFileTask::class.java)) }
+        project.afterEvaluate { p ->
+            p.tasks.withType(VersionPropertyFileTask::class.java)
+                .forEach { it.dependsOn(p.getTasksByName("processResources", false)) }
+            p.tasks.withType(Jar::class.java)
+                .forEach { it.dependsOn(p.tasks.withType(VersionPropertyFileTask::class.java)) }
         }
     }
 
