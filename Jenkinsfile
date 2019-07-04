@@ -1,6 +1,6 @@
 #!groovy
 
-def buildVersion = "2.0.6"
+def buildVersion = "2.0.8"
 
 stage('checkout') {
     node {
