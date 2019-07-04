@@ -103,6 +103,7 @@ class IntygPlugin : Plugin<Project> {
 
             with(project.extensions.getByType(SpotBugsExtension::class.java)) {
                 includeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsIncludeFilter.xml")
+                excludeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsExcludeFilter.xml")
                 isIgnoreFailures = false
                 effort = "max"
                 reportLevel = "low"
