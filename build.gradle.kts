@@ -70,5 +70,6 @@ dependencies {
 repositories {
   maven("https://plugins.gradle.org/m2/")
   mavenLocal()
-  mavenCentral()
+  maven("https://build-inera.nordicmedtest.se/nexus/repository/public/")
+  jcenter()
 }
