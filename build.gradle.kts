@@ -7,9 +7,9 @@ plugins {
     maven
     `maven-publish`
     `java-gradle-plugin`
-    kotlin("jvm") version "1.3.20"
+    kotlin("jvm") version "1.3.31"
 
-    id("org.ajoberstar.grgit") version "3.0.0"
+    id("org.ajoberstar.grgit") version "3.1.1"
 }
 
 group = "se.inera.intyg.plugin.common"
@@ -52,11 +52,11 @@ publishing {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.ajoberstar.grgit:grgit-core:3.0.0")
-    implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.13")
+    implementation("org.ajoberstar.grgit:grgit-core:3.1.1")
+    implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.0.16")
     implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
-    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7")
-    implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9")
+    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8")
+    implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:2.0.0")
 }
 
 repositories {
