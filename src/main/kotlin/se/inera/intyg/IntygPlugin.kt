@@ -59,7 +59,6 @@ class IntygPlugin : Plugin<Project> {
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
-        addGlobalTaskType(project, ArchiveDirectoryTask::class.java)
     }
 
     private fun applyGitHooks(project: Project) {
