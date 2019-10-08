@@ -252,9 +252,12 @@ class IntygPlugin : Plugin<Project> {
 
     private fun copyFile(sourceFile: File, destinationDir: Path) {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
-            Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+            sourceFile.inputStream().use { input ->
+                Files.copy(input, destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+            }
 
             val supportedAttr = destinationDir.fileSystem.supportedFileAttributeViews()
+
             if (supportedAttr.contains("posix")) {
                 // Underliggande system stödjer POSIX
                 // Assign permissions (chmod 755).
