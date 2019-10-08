@@ -22,6 +22,7 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
@@ -54,6 +55,7 @@ class IntygPlugin : Plugin<Project> {
         applySonar(project)
         applySharedTestReport(project)
         applyVersionPropertyFile(project)
+        applyOwasp(project)
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
@@ -208,6 +210,12 @@ class IntygPlugin : Plugin<Project> {
                     it.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
                 }
             }
+        }
+    }
+
+    private fun applyOwasp(project: Project) {
+        if (project === project.rootProject) {
+            project.pluginManager.apply(DependencyCheckPlugin::class.java)
         }
     }
 

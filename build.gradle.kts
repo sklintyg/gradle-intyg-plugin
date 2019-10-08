@@ -57,6 +57,7 @@ dependencies {
     implementation("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
     implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8")
     implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:2.0.0")
+    implementation("org.owasp:dependency-check-gradle:5.2.2")
 }
 
 repositories {
