@@ -24,6 +24,7 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
@@ -58,10 +59,10 @@ class IntygPlugin : Plugin<Project> {
         applySonar(project)
         applySharedTestReport(project)
         applyVersionPropertyFile(project)
+        applyOwasp(project)
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
-        addGlobalTaskType(project, ArchiveDirectoryTask::class.java)
     }
 
     private fun applyGitHooks(project: Project) {
@@ -250,11 +251,20 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
+    private fun applyOwasp(project: Project) {
+        if (project === project.rootProject) {
+            project.pluginManager.apply(DependencyCheckPlugin::class.java)
+        }
+    }
+
     private fun copyFile(sourceFile: File, destinationDir: Path) {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
-            Files.copy(sourceFile.inputStream(), destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+            sourceFile.inputStream().use { input ->
+                Files.copy(input, destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+            }
 
             val supportedAttr = destinationDir.fileSystem.supportedFileAttributeViews()
+
             if (supportedAttr.contains("posix")) {
                 // Underliggande system stödjer POSIX
                 // Assign permissions (chmod 755).
