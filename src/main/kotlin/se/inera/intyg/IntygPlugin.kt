@@ -23,7 +23,7 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
-import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
@@ -196,14 +196,15 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(JacocoPlugin::class.java)
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
-                toolVersion = "0.8.3"
+                toolVersion = "0.8.4"
+                reportsDir = File("${project.buildDir}/reports/jacoco")
             }
 
             project.afterEvaluate {
-                it.tasks.withType(Test::class.java).forEach { task ->
-                    val taskExtension = task.extensions.findByType(JacocoTaskExtension::class.java) ?: throw RuntimeException("No jacoco extension")
-                    taskExtension.destinationFile = File("${it.buildDir}/jacoco/test.exec")
-                    taskExtension.destinationFile = File("${it.buildDir}/jacoco/test.exec")
+                it.getTasksByName("jacocoTestReport", false).forEach { task ->
+                    val taskReport = task as JacocoReport
+                    taskReport.reports.xml.isEnabled = true
+                    taskReport.reports.xml.destination = File("${project.buildDir}/reports/jacoco/test.xml")
                 }
             }
         }
@@ -217,7 +218,7 @@ class IntygPlugin : Plugin<Project> {
                 properties {
                     it.property("sonar.projectName", project.name)
                     it.property("sonar.projectKey", project.name)
-                    it.property("sonar.jacoco.reportPath", "build/jacoco/test.exec")
+                    it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
                     it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://build-inera.nordicmedtest.se/sonar")
                     it.property("sonar.test.exclusions", "src/test/**")
                     it.property("sonar.exclusions",
