@@ -6,7 +6,7 @@ plugins {
   maven
   `maven-publish`
   `java-gradle-plugin`
-  kotlin("jvm") version "1.3.31"
+  kotlin("jvm") version "1.3.70"
 
   id("org.ajoberstar.grgit") version "3.1.1"
 }
@@ -17,7 +17,7 @@ version = System.getProperty("buildVersion") ?: "3.1.0-SNAPSHOT"
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "1.8"
+      jvmTarget = "11"
     }
   }
 }
@@ -57,15 +57,16 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.1.0")
   implementation("org.ajoberstar.grgit:grgit-core:3.1.1")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:0.8.1")
-  implementation("com.google.errorprone:error_prone_core:2.3.3")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:1.1.1")
+  implementation("com.google.errorprone:error_prone_core:2.3.4")
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8")
-  implementation("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:2.0.0")
+  implementation("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.0.2")
   implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
-  implementation("org.springframework:spring-core:5.1.10.RELEASE") {
+  implementation("org.springframework:spring-core:5.2.4.RELEASE") {
     isForce = true
   }
-  implementation("org.owasp:dependency-check-gradle:5.2.2")
+  implementation("org.owasp:dependency-check-gradle:5.2.4")
+
 }
 
 repositories {

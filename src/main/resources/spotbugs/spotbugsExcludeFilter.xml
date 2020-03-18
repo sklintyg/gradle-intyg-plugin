@@ -6,4 +6,7 @@
     <Match>
         <Class name="~.*\.kt\$.*"/>
     </Match>
+    <Match>
+        <Source name="~.*\.groovy" />
+    </Match>
 </FindBugsFilter>

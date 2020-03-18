@@ -1,8 +1,8 @@
 package se.inera.intyg
 
-import com.github.spotbugs.SpotBugsExtension
-import com.github.spotbugs.SpotBugsPlugin
-import com.github.spotbugs.SpotBugsTask
+import com.github.spotbugs.snom.*
+import com.github.spotbugs.snom.internal.SpotBugsHtmlReport
+import com.github.spotbugs.snom.internal.SpotBugsXmlReport
 import io.gitlab.arturbosch.detekt.DetektPlugin
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
@@ -15,7 +15,6 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstylePlugin
 import org.gradle.api.tasks.compile.JavaCompile
@@ -109,13 +108,18 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(SpotBugsPlugin::class.java)
 
             with(project.extensions.getByType(SpotBugsExtension::class.java)) {
-                includeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsIncludeFilter.xml")
-                excludeFilterConfig = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsExcludeFilter.xml")
-                isIgnoreFailures = false
-                effort = "max"
-                toolVersion = "3.1.12"
-                reportLevel = "low"
-                sourceSets = setOf(project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets.getByName("main"))
+
+                val includeProvider =
+                     project.layout.file(project.providers.provider { project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsIncludeFilter.xml").asFile() })
+                val excludeProvider =
+                    project.layout.file(project.providers.provider { project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsExcludeFilter.xml").asFile() })
+
+                includeFilter.set(includeProvider)
+                excludeFilter.set(excludeProvider)
+                ignoreFailures.set(false)
+                effort.set(Effort.MAX)
+                toolVersion.set("4.0.0")
+                reportLevel.set(Confidence.LOW)
             }
 
             project.afterEvaluate { evaluatedProject ->
@@ -124,9 +128,16 @@ class IntygPlugin : Plugin<Project> {
                         // There are sometimes text files in the build directory and these can obviously not be examined as java classes.
                         !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
                     }
+
+                    // SpotbugsTest and spotbugsMain activated by default. Manually disable spotbugsTest
+                    task.isEnabled = (task.name != "spotbugsTest")
+
                     task.reports {
-                        it.xml.isEnabled = false
-                        it.html.isEnabled = true
+                        if(it is SpotBugsXmlReport) {
+                            it.isEnabled = false
+                        } else if(it is SpotBugsHtmlReport) {
+                            it.isEnabled = true
+                        }
                     }
                 }
             }
@@ -147,11 +158,17 @@ class IntygPlugin : Plugin<Project> {
     private fun applyErrorprone(project: Project) {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
             project.pluginManager.apply(ErrorPronePlugin::class.java)
+            project.dependencies.add("errorprone", "com.google.errorprone:error_prone_core:2.3.4")
 
             project.afterEvaluate { theProject ->
+                theProject.getTasksByName("compileTestJava", false).forEach {
+                    val jTestTask = it as JavaCompile
+                    jTestTask.options.errorprone.isEnabled.set(false)
+                }
+
                 theProject.getTasksByName("compileJava", false).forEach {
                     val jTask = it as JavaCompile
-//                    jTask.toolChain = net.ltgt.gradle.errorprone.ErrorProneToolChain.create(project)
+                    jTask.options.errorprone.disableWarningsInGeneratedCode.set(true)
                     jTask.options.errorprone.errorproneArgs.addAll(listOf(
                             "-XepExcludedPaths:.*AutoValue_.+",
                             "-Xep:BoxedPrimitiveConstructor:ERROR", "-Xep:ClassCanBeStatic:ERROR",
@@ -258,26 +275,29 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
-    private fun copyFile(sourceFile: File, destinationDir: Path) {
+    private fun copyFile(sourceFile: File, destinationDir: Path) : Path? {
         if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
             sourceFile.inputStream().use { input ->
                 Files.copy(input, destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
             }
 
             val supportedAttr = destinationDir.fileSystem.supportedFileAttributeViews()
+            val destFile = destinationDir.resolve(sourceFile.name)
 
             if (supportedAttr.contains("posix")) {
                 // Underliggande system stödjer POSIX
                 // Assign permissions (chmod 755).
                 val perms = PosixFilePermissions.fromString("rwxr-xr-x")
-                Files.setPosixFilePermissions(destinationDir.resolve(sourceFile.name), perms)
+                Files.setPosixFilePermissions(destFile, perms)
             } else {
-                val file = destinationDir.resolve(sourceFile.name).toFile()
+                val file = destFile.toFile()
                 file.setReadable(true, false)       // Everyone can read
                 file.setWritable(true, true)        // Only the owner can write
                 file.setExecutable(true, false)     // Everyone can execute
             }
+            return destFile
         }
+        return null
     }
 
     private fun isRootProject(project: Project) : Boolean {

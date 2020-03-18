@@ -243,9 +243,11 @@
     <Match>
         <Bug pattern="NP_ALWAYS_NULL"/>
     </Match>
+<!-- Bug Java11: https://github.com/spotbugs/spotbugs/issues/756
     <Match>
         <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
     </Match>
+-->
     <Match>
         <Bug pattern="NP_GUARANTEED_DEREF_ON_EXCEPTION_PATH"/>
     </Match>

@@ -1,7 +1,7 @@
 #!groovy
 
 node {
-    def buildVersion = "3.0.9"
+    def buildVersion = "3.1.0"
 
     stage('checkout') {
         git url: "https://github.com/sklintyg/gradle-intyg-plugin.git", branch: GIT_BRANCH
@@ -9,10 +9,10 @@ node {
     }
 
     stage('build') {
-        shgradle "--refresh-dependencies clean build -DbuildVersion=${buildVersion}"
+        shgradle11 "--refresh-dependencies clean build -DbuildVersion=${buildVersion}"
     }
 
     stage('tag and upload') {
-        shgradle "publishPluginMavenPublicationToMavenRepository tagRelease -DbuildVersion=${buildVersion}"
+        shgradle11 "publishPluginMavenPublicationToMavenRepository tagRelease -DbuildVersion=${buildVersion}"
     }
 }
