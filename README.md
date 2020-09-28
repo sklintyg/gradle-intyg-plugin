@@ -13,7 +13,7 @@ Gradle plugin för att användas av de övriga intygsprojekten under [SKL Intyg]
     $ gradle publish
     
 För att kunna publisera till release repot behöver användarnamn och lösenord först sättas
-via systemvariablerna **nexusUsername** och **nexusPassword**        
+via systemvariablerna **ineraNexusUsername** och **ineraNexusPassword**        
 
 ##### Publisera till lokalt repo:
 
@@ -44,7 +44,7 @@ i projektets **settings.gradle** file.
         repositories {
             // Uncomment line below during development of gradle-intyg-plugin
             //mavenLocal()
-            maven { url "https://build-inera.nordicmedtest.se/nexus/repository/releases/" }
+            maven { url "https://nexus.drift.inera.se/repository/maven-releases/" }
             gradlePluginPortal()
         }
     }
