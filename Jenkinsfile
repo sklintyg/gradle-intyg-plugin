@@ -1,7 +1,7 @@
 #!groovy
 
 node {
-    def buildVersion = "3.1.2"
+    def buildVersion = "3.1.3"
 
     stage('checkout') {
         git url: "https://github.com/sklintyg/gradle-intyg-plugin.git", branch: GIT_BRANCH

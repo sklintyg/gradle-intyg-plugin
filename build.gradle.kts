@@ -57,7 +57,7 @@ dependencies {
   implementation(kotlin("stdlib-jdk8"))
   implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.1.0")
   implementation("org.ajoberstar.grgit:grgit-core:3.1.1")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:1.1.1")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:1.2.1")
   implementation("com.google.errorprone:error_prone_core:2.3.4")
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8")
   implementation("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.0.2")
@@ -70,7 +70,7 @@ dependencies {
 }
 
 repositories {
-  maven("https://plugins.gradle.org/m2/")
+  gradlePluginPortal()
   mavenLocal()
   maven("https://nexus.drift.inera.se/repository/maven-public/")
   jcenter()
