@@ -72,6 +72,6 @@ dependencies {
 repositories {
   gradlePluginPortal()
   mavenLocal()
-  maven("https://nexus.drift.inera.se/repository/maven-public/")
+  maven("https://nexus.drift.inera.se/repository/it-public/")
   jcenter()
 }
