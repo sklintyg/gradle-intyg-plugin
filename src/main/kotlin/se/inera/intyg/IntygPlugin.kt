@@ -233,10 +233,13 @@ class IntygPlugin : Plugin<Project> {
 
             with(project.extensions.getByType(SonarQubeExtension::class.java)) {
                 properties {
-                    it.property("sonar.projectName", project.name)
-                    it.property("sonar.projectKey", project.name)
+                    it.property("sonar.projectName", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
+                    it.property("sonar.projectKey", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
                     it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
-                    it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://build-inera.nordicmedtest.se/sonar")
+                    it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
+                    System.getProperty("ineraSonarLogin")?.let { prop ->
+                        it.property("sonar.login", prop)
+                    }
                     it.property("sonar.test.exclusions", "src/test/**")
                     it.property("sonar.exclusions",
                             listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",

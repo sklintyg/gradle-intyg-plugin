@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "3.1.2-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "3.1.4-SNAPSHOT"
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
