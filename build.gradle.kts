@@ -6,13 +6,13 @@ plugins {
   maven
   `maven-publish`
   `java-gradle-plugin`
-  kotlin("jvm") version "1.3.70"
+  kotlin("jvm") version "1.7.10"
 
-  id("org.ajoberstar.grgit") version "3.1.1"
+  id("org.ajoberstar.grgit") version "4.1.1"
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "3.1.4-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "3.2.0-SNAPSHOT"
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -55,17 +55,15 @@ publishing {
 
 dependencies {
   implementation(kotlin("stdlib-jdk8"))
-  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.1.0")
-  implementation("org.ajoberstar.grgit:grgit-core:3.1.1")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:1.2.1")
-  implementation("com.google.errorprone:error_prone_core:2.3.4")
-  implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8")
-  implementation("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.0.2")
+  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.21.0")
+  implementation("org.ajoberstar.grgit:grgit-core:5.0.0")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
+  implementation("com.google.errorprone:error_prone_core:2.15.0")
+  implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3")
+  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:4.8.0") // version 5+ when gradle 7+
   implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
-  implementation("org.springframework:spring-core:5.2.4.RELEASE") {
-    isForce = true
-  }
-  implementation("org.owasp:dependency-check-gradle:5.2.4")
+  implementation("org.springframework:spring-core:5.3.22")
+  implementation("org.owasp:dependency-check-gradle:7.1.2")
 
 }
 
@@ -73,5 +71,5 @@ repositories {
   gradlePluginPortal()
   mavenLocal()
   maven("https://nexus.drift.inera.se/repository/it-public/")
-  jcenter()
+  mavenCentral()
 }
