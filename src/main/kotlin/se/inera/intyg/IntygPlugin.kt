@@ -118,7 +118,7 @@ class IntygPlugin : Plugin<Project> {
                 excludeFilter.set(excludeProvider)
                 ignoreFailures.set(false)
                 effort.set(Effort.MAX)
-                toolVersion.set("4.0.0")
+                toolVersion.set("4.7.2")
                 reportLevel.set(Confidence.LOW)
             }
 
@@ -158,7 +158,7 @@ class IntygPlugin : Plugin<Project> {
     private fun applyErrorprone(project: Project) {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
             project.pluginManager.apply(ErrorPronePlugin::class.java)
-            project.dependencies.add("errorprone", "com.google.errorprone:error_prone_core:2.3.4")
+            project.dependencies.add("errorprone", "com.google.errorprone:error_prone_core:2.15.0")
 
             project.afterEvaluate { theProject ->
                 theProject.getTasksByName("compileTestJava", false).forEach {
@@ -176,7 +176,8 @@ class IntygPlugin : Plugin<Project> {
                             "-Xep:ImmutableEnumChecker:ERROR", "-Xep:MissingCasesInEnumSwitch:ERROR",
                             "-Xep:MissingOverride:ERROR", "-Xep:NarrowingCompoundAssignment:ERROR",
                             "-Xep:NonOverridingEquals:ERROR", "-Xep:TypeParameterUnusedInFormals:ERROR",
-                            "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN"))
+                            "-Xep:TypeParameterUnusedInFormals:ERROR", "-Xep:UnnecessaryDefaultInEnumSwitch:WARN",
+                            "-Xep:CanIgnoreReturnValueSuggester:OFF", "-Xep:MissingSummary:OFF"))
                 }
             }
         }
@@ -189,7 +190,7 @@ class IntygPlugin : Plugin<Project> {
             with(project.extensions.getByType(LicenseExtension::class.java)) {
                 strictCheck = true
                 header = null
-                headerURI = IntygPlugin::class.java.getResource("/license/header.txt").toURI()
+                headerURI = IntygPlugin::class.java.getResource("/license/header.txt")!!.toURI()
                 includePatterns = setOf("**/*.java", "**/*.kt", "**/*.groovy", "**/*.js")
                 mapping("java", "SLASHSTAR_STYLE")
                 mapping("kotlin", "SLASHSTAR_STYLE")
@@ -213,8 +214,8 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(JacocoPlugin::class.java)
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
-                toolVersion = "0.8.4"
-                reportsDir = File("${project.buildDir}/reports/jacoco")
+                toolVersion = "0.8.6"
+                reportsDirectory.set(File("${project.buildDir}/reports/jacoco"))
             }
 
             project.afterEvaluate {
@@ -257,7 +258,7 @@ class IntygPlugin : Plugin<Project> {
                 // We want this task to finalize all test tasks, so that it is run whether any tests failed or not.
                 // B/c of a limitation in gradle, we cannot both depend on a task AND finalize it. Therefore we depend
                 // on the output of the test tasks, rather than the test tasks themselves.
-                reportTask.reportOn(project.getTasksByName("test", true).map { task -> (task as Test).binResultsDir })
+                reportTask.reportOn(project.getTasksByName("test", true).map { task -> (task as Test).binaryResultsDirectory })
                 it.tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
             }
         }
@@ -350,9 +351,8 @@ fun findResolvedVersion(project: Project, groupName: String): String {
 }
 
 fun findGitRepository(rootDirectory: File): Repository {
-    val repository = FileRepositoryBuilder()
-            .findGitDir(rootDirectory)!!
-            .apply { gitDir ?: throw Exception("Project must be in a git directory for git-hooks to work. Recommended solution: git init") }
-            .build()
-    return repository
+    return FileRepositoryBuilder()
+        .findGitDir(rootDirectory)!!
+        .apply { gitDir ?: throw Exception("Project must be in a git directory for git-hooks to work. Recommended solution: git init") }
+        .build()
 }

@@ -18,6 +18,16 @@
     <property name="eachLine" value="true"/>
   </module>
 
+  <module name="LineLength">
+    <property name="severity" value="warning"/>
+    <property name="max" value="140"/>
+    <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+  </module>
+  <module name="SuppressWithPlainTextCommentFilter">
+    <property name="offCommentFormat" value="CHECKSTYLE\:OFF ([\w\|]+)"/>
+    <property name="onCommentFormat" value="CHECKSTYLE\:ON ([\w\|]+)"/>
+    <property name="checkFormat" value="$1"/>
+  </module>
   <module name="TreeWalker">
     <module name="SuppressionCommentFilter">
       <property name="offCommentFormat" value="CHECKSTYLE\:OFF ([\w\|]+)"/>
@@ -37,16 +47,15 @@
 <!--      <property name="allowByTailComment" value="true"/>-->
 <!--      <property name="allowNonPrintableEscapes" value="true"/>-->
 <!--    </module>-->
-    <module name="LineLength">
-      <property name="max" value="140"/>
-      <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
-    </module>
     <module name="AvoidStarImport">
       <property name="severity" value="ignore"/>
       <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     </module>
+    <module name="UnusedImports">
+      <property name="severity" value="info"/>
+    </module>
     <module name="OneTopLevelClass"/>
-    <module name="NoLineWrap"/>
+<!--    <module name="NoLineWrap"/>-->
     <module name="EmptyBlock">
       <property name="option" value="TEXT"/>
       <property name="tokens"
@@ -61,10 +70,15 @@
                     LITERAL_DO"/>
     </module>
     <module name="RightCurly">
+      <property name="id" value="RightCurlyAloneOrSingeLine"/>
+      <property name="option" value="alone_or_singleline"/>
+      <property name="tokens" value="CTOR_DEF"/>
+    </module>
+    <module name="RightCurly">
       <property name="id" value="RightCurlyAlone"/>
       <property name="option" value="alone"/>
       <property name="tokens"
-          value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT,
+          value="CLASS_DEF, METHOD_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT,
                     INSTANCE_INIT"/>
     </module>
     <module name="WhitespaceAround">
@@ -228,7 +242,7 @@
 <!--    </module>-->
     <module name="JavadocMethod">
       <property name="severity" value="ignore"/>
-      <property name="suppressLoadErrors" value="true"/>
+<!--      <property name="suppressLoadErrors" value="true"/>-->
       <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     </module>
     <module name="MethodName">
