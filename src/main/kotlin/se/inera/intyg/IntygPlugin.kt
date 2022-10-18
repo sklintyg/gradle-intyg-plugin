@@ -24,6 +24,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
+import org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
@@ -276,6 +277,10 @@ class IntygPlugin : Plugin<Project> {
     private fun applyOwasp(project: Project) {
         if (project === project.rootProject) {
             project.pluginManager.apply(DependencyCheckPlugin::class.java)
+
+            val dependencyCheckExtension = project.extensions.getByType(DependencyCheckExtension::class.java)
+            dependencyCheckExtension.analyzers.assemblyEnabled = false
+            dependencyCheckExtension.analyzers.nodeAudit.yarnEnabled = false
         }
     }
 
