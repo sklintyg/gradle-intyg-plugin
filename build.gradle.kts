@@ -64,7 +64,6 @@ dependencies {
   implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
   implementation("org.springframework:spring-core:5.3.22")
   implementation("org.owasp:dependency-check-gradle:7.2.1")
-
 }
 
 repositories {
