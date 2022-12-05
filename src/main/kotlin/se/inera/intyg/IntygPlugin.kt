@@ -101,6 +101,7 @@ class IntygPlugin : Plugin<Project> {
                 csTask.onlyIf { project.hasProperty(CODE_QUALITY_FLAG) }
             }
             it.getTasksByName("checkstyleTest", false).forEach { task -> task.enabled = false }
+            it.getTasksByName("checkstyleTestFixtures", false).forEach { task -> task.enabled = false }
         }
     }
 

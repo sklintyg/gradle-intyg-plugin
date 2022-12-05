@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "3.2.2-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "3.2.3-SNAPSHOT"
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -37,7 +37,7 @@ task("tagRelease") {
     val git = Git(FileRepositoryBuilder().setGitDir(File(project.rootProject.projectDir, ".git")).readEnvironment().findGitDir().build())
     git.tag().setName("v${project.version}").setMessage("Release of ${project.version}").call()
     git.push().setCredentialsProvider(UsernamePasswordCredentialsProvider(System.getProperty("githubUser"), System.getProperty("githubPassword")))
-       .setPushTags().call()
+        .setPushTags().call()
   }
 }
 
