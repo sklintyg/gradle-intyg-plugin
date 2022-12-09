@@ -131,8 +131,8 @@ class IntygPlugin : Plugin<Project> {
                         !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
                     }
 
-                    // SpotbugsTest and spotbugsMain activated by default. Manually disable spotbugsTest
-                    task.isEnabled = (task.name != "spotbugsTest")
+                    // SpotbugsTest, SpotbugsTestFixtures and spotbugsMain activated by default. Manually disable spotbugsTest & SpotbugsTestFixtures
+                    task.isEnabled = (task.name != "spotbugsTest" && task.name != "spotbugsTestFixtures")
 
                     task.reports {
                         if(it is SpotBugsXmlReport) {
