@@ -20,7 +20,7 @@ open class TagReleaseTask : DefaultTask() {
             git.tag().setName(System.getProperty("intyg.tag.prefix", "v") + project.version).
                     setMessage("Release of ${project.version}").call()
             git.push().setCredentialsProvider(UsernamePasswordCredentialsProvider(
-                    System.getProperty("githubUser"), System.getProperty("githubPassword"))).setPushTags().call()
+                    System.getProperty("githubUser"), System.getProperty("githubPassword"))).setPushAll().call()
         }
     }
 }
