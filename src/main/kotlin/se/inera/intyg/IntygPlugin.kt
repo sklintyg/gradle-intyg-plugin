@@ -216,7 +216,7 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(JacocoPlugin::class.java)
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
-                toolVersion = "0.8.6"
+                toolVersion = "0.8.10"
                 reportsDirectory.set(File("${project.buildDir}/reports/jacoco"))
             }
 
@@ -239,11 +239,13 @@ class IntygPlugin : Plugin<Project> {
                     it.property("sonar.projectName", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
                     it.property("sonar.projectKey", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
                     it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
+                    it.property("sonar.dependencyCheck.jsonReportPath", "${project.buildDir}/reports/dependency-check-report.json")
+                    it.property("sonar.dependencyCheck.htmlReportPath", "${project.buildDir}/reports/dependency-check-report.html")
                     it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
                     System.getProperty("ineraSonarLogin")?.let { prop ->
                         it.property("sonar.login", prop)
                     }
-                    it.property("sonar.test.exclusions", "src/test/**")
+                    it.property("sonar.test.exclusions", "**/src/test/**")
                     it.property("sonar.exclusions",
                             listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",
                                     "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**", "**/templates.js"))
@@ -280,8 +282,12 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(DependencyCheckPlugin::class.java)
 
             val dependencyCheckExtension = project.extensions.getByType(DependencyCheckExtension::class.java)
+            dependencyCheckExtension.formats = listOf("HTML", "JSON")
             dependencyCheckExtension.analyzers.assemblyEnabled = false
+            dependencyCheckExtension.analyzers.nodeEnabled = false
+            dependencyCheckExtension.analyzers.nodeAudit.enabled = false
             dependencyCheckExtension.analyzers.nodeAudit.yarnEnabled = false
+            dependencyCheckExtension.analyzers.nodeAudit.pnpmEnabled = false
         }
     }
 
