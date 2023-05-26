@@ -288,6 +288,7 @@ class IntygPlugin : Plugin<Project> {
             dependencyCheckExtension.analyzers.nodeAudit.enabled = false
             dependencyCheckExtension.analyzers.nodeAudit.yarnEnabled = false
             dependencyCheckExtension.analyzers.nodeAudit.pnpmEnabled = false
+            dependencyCheckExtension.analyzers.bundleAuditEnabled = false
         }
     }
 
