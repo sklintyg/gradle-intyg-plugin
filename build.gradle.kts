@@ -3,16 +3,15 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 
 plugins {
-  maven
   `maven-publish`
   `java-gradle-plugin`
-  kotlin("jvm") version "1.7.10"
+  kotlin("jvm") version "1.9.0"
 
   id("org.ajoberstar.grgit") version "4.1.1"
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "3.2.8-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "3.2.9-SNAPSHOT"
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -41,6 +40,11 @@ task("tagRelease") {
   }
 }
 
+task("install") {
+  description = "Publishes artifact to local maven repository."
+  dependsOn("publishPluginMavenPublicationToMavenLocal")
+}
+
 publishing {
   repositories {
     maven {
@@ -55,15 +59,15 @@ publishing {
 
 dependencies {
   implementation(kotlin("stdlib-jdk8"))
-  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.21.0")
+  implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.0")
   implementation("org.ajoberstar.grgit:grgit-core:4.1.1")
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
-  implementation("com.google.errorprone:error_prone_core:2.19.1")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
+  implementation("com.google.errorprone:error_prone_core:2.20.0")
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3")
-  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:4.8.0") // version 5+ when gradle 7+
-  implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0")
-  implementation("org.springframework:spring-core:5.3.24")
-  implementation("org.owasp:dependency-check-gradle:8.2.1")
+  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14")
+  implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1")
+  implementation("org.springframework:spring-core:5.3.28")
+  implementation("org.owasp:dependency-check-gradle:8.3.1")
 }
 
 repositories {

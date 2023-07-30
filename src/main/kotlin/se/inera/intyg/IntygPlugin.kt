@@ -89,11 +89,8 @@ class IntygPlugin : Plugin<Project> {
         project.afterEvaluate {
             it.getTasksByName("checkstyleMain", false).forEach { task ->
                 val csTask = task as Checkstyle
-
                 val fileName = extension.javaVersion!!.checkstyleConfigName
-
                 csTask.config = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/checkstyle/$fileName")
-
                 csTask.configProperties = mapOf("package_name" to project.rootProject.name)
                 csTask.isIgnoreFailures = extension.ignoreFailures!!
                 csTask.isShowViolations = extension.showViolations!!
@@ -120,7 +117,7 @@ class IntygPlugin : Plugin<Project> {
                 excludeFilter.set(excludeProvider)
                 ignoreFailures.set(false)
                 effort.set(Effort.MAX)
-                toolVersion.set("4.7.2")
+                toolVersion.set("4.7.3")
                 reportLevel.set(Confidence.LOW)
             }
 
@@ -136,9 +133,9 @@ class IntygPlugin : Plugin<Project> {
 
                     task.reports {
                         if(it is SpotBugsXmlReport) {
-                            it.isEnabled = false
+                            it.required.set(false)
                         } else if(it is SpotBugsHtmlReport) {
-                            it.isEnabled = true
+                            it.required.set(true)
                         }
                     }
                 }
@@ -223,8 +220,8 @@ class IntygPlugin : Plugin<Project> {
             project.afterEvaluate {
                 it.getTasksByName("jacocoTestReport", false).forEach { task ->
                     val taskReport = task as JacocoReport
-                    taskReport.reports.xml.isEnabled = true
-                    taskReport.reports.xml.destination = File("${project.buildDir}/reports/jacoco/test.xml")
+                    taskReport.reports.xml.required.set(true)
+                    taskReport.reports.xml.outputLocation.set(File("${project.buildDir}/reports/jacoco/test.xml"))
                 }
             }
         }
@@ -262,7 +259,7 @@ class IntygPlugin : Plugin<Project> {
                 // We want this task to finalize all test tasks, so that it is run whether any tests failed or not.
                 // B/c of a limitation in gradle, we cannot both depend on a task AND finalize it. Therefore we depend
                 // on the output of the test tasks, rather than the test tasks themselves.
-                reportTask.reportOn(project.getTasksByName("test", true).map { task -> (task as Test).binaryResultsDirectory })
+                reportTask.testResults.from(project.getTasksByName("test", true).map { task -> (task as Test).binaryResultsDirectory })
                 it.tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
             }
         }
