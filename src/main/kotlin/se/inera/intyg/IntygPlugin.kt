@@ -25,7 +25,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 import org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension
-import org.sonarqube.gradle.SonarQubeExtension
+import org.sonarqube.gradle.SonarExtension
 import org.sonarqube.gradle.SonarQubePlugin
 import java.io.File
 import java.io.FileInputStream
@@ -120,7 +120,7 @@ class IntygPlugin : Plugin<Project> {
                 excludeFilter.set(excludeProvider)
                 ignoreFailures.set(false)
                 effort.set(Effort.MAX)
-                toolVersion.set("4.7.2")
+                toolVersion.set("4.8.0")
                 reportLevel.set(Confidence.LOW)
             }
 
@@ -216,7 +216,7 @@ class IntygPlugin : Plugin<Project> {
             project.pluginManager.apply(JacocoPlugin::class.java)
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
-                toolVersion = "0.8.10"
+                toolVersion = "0.8.11"
                 reportsDirectory.set(File("${project.buildDir}/reports/jacoco"))
             }
 
@@ -231,26 +231,24 @@ class IntygPlugin : Plugin<Project> {
     }
 
     private fun applySonar(project: Project) {
-        if (project === project.rootProject) {
-            project.pluginManager.apply(SonarQubePlugin::class.java)
-
-            with(project.extensions.getByType(SonarQubeExtension::class.java)) {
-                properties {
-                    it.property("sonar.projectName", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
-                    it.property("sonar.projectKey", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
-                    it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
-                    it.property("sonar.dependencyCheck.jsonReportPath", "${project.buildDir}/reports/dependency-check-report.json")
-                    it.property("sonar.dependencyCheck.htmlReportPath", "${project.buildDir}/reports/dependency-check-report.html")
-                    it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
-                    System.getProperty("ineraSonarLogin")?.let { prop ->
-                        it.property("sonar.login", prop)
-                    }
-                    it.property("sonar.test.exclusions", "**/src/test/**")
-                    it.property("sonar.exclusions",
-                            listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",
-                                    "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**", "**/templates.js"))
-                    it.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
+        project.pluginManager.apply(SonarQubePlugin::class.java)
+        with (project.extensions.getByType(SonarExtension::class.java)) {
+            properties {
+                it.property("sonar.projectName", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
+                it.property("sonar.projectKey", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
+                it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
+                it.property("sonar.dependencyCheck.jsonReportPath", "${project.buildDir}/reports/dependency-check-report.json")
+                it.property("sonar.dependencyCheck.htmlReportPath", "${project.buildDir}/reports/dependency-check-report.html")
+                it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
+                System.getProperty("ineraSonarLogin")?.let { prop ->
+                    it.property("sonar.login", prop)
                 }
+                it.property("sonar.test.exclusions", "**/src/test/**")
+                it.property("sonar.exclusions",
+                    listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",
+                        "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**", "**/templates.js"))
+                it.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
+
             }
         }
     }
@@ -308,9 +306,9 @@ class IntygPlugin : Plugin<Project> {
                 Files.setPosixFilePermissions(destFile, perms)
             } else {
                 val file = destFile.toFile()
-                file.setReadable(true, false)       // Everyone can read
-                file.setWritable(true, true)        // Only the owner can write
-                file.setExecutable(true, false)     // Everyone can execute
+                file.setReadable(true, false)      // Everyone can read
+                file.setWritable(true, true)       // Only the owner can write
+                file.setExecutable(true, false)  // Everyone can execute
             }
             return destFile
         }
