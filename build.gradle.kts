@@ -44,8 +44,7 @@ task("tagRelease") {
 publishing {
   repositories {
     maven {
-      url = uri("http://172.21.0.1:37373/repository/maven-releases/")
-      //url = uri("https://nexus.drift.inera.se/repository/maven-releases/")
+      url = uri("https://nexus.drift.inera.se/repository/maven-releases/")
       credentials {
         username = System.getProperty("ineraNexusUsername")
         password = System.getProperty("ineraNexusPassword")

@@ -234,12 +234,13 @@ class IntygPlugin : Plugin<Project> {
         project.pluginManager.apply(SonarQubePlugin::class.java)
         with (project.extensions.getByType(SonarExtension::class.java)) {
             properties {
+                it.property("sonar.gradle.skipCompile", true)
                 it.property("sonar.projectName", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
                 it.property("sonar.projectKey", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
                 it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
                 it.property("sonar.dependencyCheck.jsonReportPath", "${project.buildDir}/reports/dependency-check-report.json")
                 it.property("sonar.dependencyCheck.htmlReportPath", "${project.buildDir}/reports/dependency-check-report.html")
-                it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "http://172.21.0.1:9000")
+                it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
                 System.getProperty("ineraSonarLogin")?.let { prop ->
                     it.property("sonar.login", prop)
                 }
