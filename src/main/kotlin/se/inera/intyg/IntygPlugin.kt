@@ -57,7 +57,6 @@ class IntygPlugin : Plugin<Project> {
         applyLicence(project)
         applyJacoco(project)
         applySonar(project)
-        applySharedTestReport(project)
         applyVersionPropertyFile(project)
         applyOwasp(project)
 
@@ -248,19 +247,6 @@ class IntygPlugin : Plugin<Project> {
                     it.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
 
                 }
-            }
-        }
-    }
-
-    private fun applySharedTestReport(project: Project) {
-        val reportTask = project.tasks.create("testReport", SharedTestReportTask::class.java)
-        project.subprojects.forEach { subProject ->
-            subProject.afterEvaluate {
-                // We want this task to finalize all test tasks, so that it is run whether any tests failed or not.
-                // B/c of a limitation in gradle, we cannot both depend on a task AND finalize it. Therefore we depend
-                // on the output of the test tasks, rather than the test tasks themselves.
-                reportTask.testResults.from(project.getTasksByName("test", true).map { task -> (task as Test).binaryResultsDirectory })
-                it.tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
             }
         }
     }
