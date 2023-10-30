@@ -50,6 +50,7 @@ publishing {
     maven {
       //url = uri("https://nexus.drift.inera.se/repository/maven-releases/")
       url = uri("http://localhost:37373/repository/maven-releases/")
+      isAllowInsecureProtocol = true
       credentials {
         username = System.getProperty("ineraNexusUsername")
         password = System.getProperty("ineraNexusPassword")
