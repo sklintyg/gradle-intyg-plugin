@@ -236,7 +236,7 @@ class IntygPlugin : Plugin<Project> {
                     it.property("sonar.coverage.jacoco.xmlReportPath", "${project.layout.buildDirectory.get().asFile}/reports/jacoco/test.xml")
                     it.property("sonar.dependencyCheck.jsonReportPath", "${project.layout.buildDirectory.get().asFile}/reports/dependency-check-report.json")
                     it.property("sonar.dependencyCheck.htmlReportPath", "${project.layout.buildDirectory.get().asFile}/reports/dependency-check-report.html")
-                    it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
+                    it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "http://localhost:9000"/*"https://sonarqube.drift.inera.se"*/)
                     System.getProperty("ineraSonarLogin")?.let { prop ->
                         it.property("sonar.login", prop)
                     }

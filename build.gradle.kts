@@ -48,7 +48,8 @@ task("install") {
 publishing {
   repositories {
     maven {
-      url = uri("https://nexus.drift.inera.se/repository/maven-releases/")
+      //url = uri("https://nexus.drift.inera.se/repository/maven-releases/")
+      url = uri("http://localhost:37373/repository/maven-releases/")
       credentials {
         username = System.getProperty("ineraNexusUsername")
         password = System.getProperty("ineraNexusPassword")
