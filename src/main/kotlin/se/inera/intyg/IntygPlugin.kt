@@ -18,7 +18,6 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstylePlugin
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
@@ -31,7 +30,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
@@ -49,7 +47,6 @@ class IntygPlugin : Plugin<Project> {
 
         project.pluginManager.apply(JavaPlugin::class.java)
 
-        applyGitHooks(project)
         applyCheckstyle(project)
         applySpotbugs(project)
         applyDetekt(project)
@@ -57,29 +54,11 @@ class IntygPlugin : Plugin<Project> {
         applyLicence(project)
         applyJacoco(project)
         applySonar(project)
-        applySharedTestReport(project)
         applyVersionPropertyFile(project)
         applyOwasp(project)
 
         addGlobalTaskType(project, TagReleaseTask::class.java)
         addGlobalTaskType(project, VersionPropertyFileTask::class.java)
-    }
-
-    private fun applyGitHooks(project: Project) {
-        if (isRootProject(project)) {
-            val repository = findGitRepository(project.rootProject.projectDir)
-            val commitMsg = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/commit-msg")
-            val preCommit = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "git_hooks/pre-commit")
-
-            val toDir = Paths.get(repository.directory.path, "hooks")
-
-            if (!Files.exists(toDir)) {
-                Files.createDirectory(toDir)
-            }
-
-            copyFile(commitMsg.asFile(), toDir)
-            copyFile(preCommit.asFile(), toDir)
-        }
     }
 
     private fun applyCheckstyle(project: Project) {
@@ -89,11 +68,8 @@ class IntygPlugin : Plugin<Project> {
         project.afterEvaluate {
             it.getTasksByName("checkstyleMain", false).forEach { task ->
                 val csTask = task as Checkstyle
-
                 val fileName = extension.javaVersion!!.checkstyleConfigName
-
                 csTask.config = project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/checkstyle/$fileName")
-
                 csTask.configProperties = mapOf("package_name" to project.rootProject.name)
                 csTask.isIgnoreFailures = extension.ignoreFailures!!
                 csTask.isShowViolations = extension.showViolations!!
@@ -108,42 +84,23 @@ class IntygPlugin : Plugin<Project> {
     private fun applySpotbugs(project: Project) {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useSpotbugs(project)) {
             project.pluginManager.apply(SpotBugsPlugin::class.java)
-
             with(project.extensions.getByType(SpotBugsExtension::class.java)) {
-
-                val includeProvider =
-                     project.layout.file(project.providers.provider { project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsIncludeFilter.xml").asFile() })
-                val excludeProvider =
-                    project.layout.file(project.providers.provider { project.resources.text.fromArchiveEntry(getPluginJarPath(project), "/spotbugs/spotbugsExcludeFilter.xml").asFile() })
-
-                includeFilter.set(includeProvider)
-                excludeFilter.set(excludeProvider)
                 ignoreFailures.set(false)
                 effort.set(Effort.MAX)
-                toolVersion.set("4.8.0")
+                toolVersion.set("4.8.0") // version 4.8.1 -> java.lang.NoSuchMethodError: org.apache.commons.lang3.Range
                 reportLevel.set(Confidence.LOW)
             }
-
             project.afterEvaluate { evaluatedProject ->
                 evaluatedProject.tasks.withType(SpotBugsTask::class.java).forEach { task ->
-                    task.classes = task.classes.filter { clazz ->
-                        // There are sometimes text files in the build directory and these can obviously not be examined as java classes.
-                        !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
-                    }
-
-                    // SpotbugsTest, SpotbugsTestFixtures and spotbugsMain activated by default. Manually disable spotbugsTest & SpotbugsTestFixtures
-                    task.isEnabled = (task.name != "spotbugsTest" && task.name != "spotbugsTestFixtures")
-
                     task.reports {
-                        if(it is SpotBugsXmlReport) {
-                            it.isEnabled = false
-                        } else if(it is SpotBugsHtmlReport) {
-                            it.isEnabled = true
-                        }
+                        if (it is SpotBugsXmlReport) { it.required.set(false) }
+                        if (it is SpotBugsHtmlReport) { it.required.set(true) }
+                    }
+                    task.classes = task.classes.filter { clazz ->
+                        !clazz.path.matches(".*\\.(xml|sql|json|log|txt|ANS|properties)\\$".toRegex())
                     }
                 }
             }
-
         }
     }
 
@@ -160,7 +117,7 @@ class IntygPlugin : Plugin<Project> {
     private fun applyErrorprone(project: Project) {
         if (project.hasProperty(CODE_QUALITY_FLAG) && useErrorprone(project)) {
             project.pluginManager.apply(ErrorPronePlugin::class.java)
-            project.dependencies.add("errorprone", "com.google.errorprone:error_prone_core:2.15.0")
+            project.dependencies.add("errorprone", "com.google.errorprone:error_prone_core:2.23.0")
 
             project.afterEvaluate { theProject ->
                 theProject.getTasksByName("compileTestJava", false).forEach {
@@ -217,14 +174,14 @@ class IntygPlugin : Plugin<Project> {
 
             with(project.extensions.getByType(JacocoPluginExtension::class.java)) {
                 toolVersion = "0.8.11"
-                reportsDirectory.set(File("${project.buildDir}/reports/jacoco"))
+                reportsDirectory.set(File("${project.layout.buildDirectory.get().asFile}/reports/jacoco"))
             }
 
             project.afterEvaluate {
                 it.getTasksByName("jacocoTestReport", false).forEach { task ->
                     val taskReport = task as JacocoReport
-                    taskReport.reports.xml.isEnabled = true
-                    taskReport.reports.xml.destination = File("${project.buildDir}/reports/jacoco/test.xml")
+                    taskReport.reports.xml.required.set(true)
+                    taskReport.reports.xml.outputLocation.set(File("${project.layout.buildDirectory.get().asFile}/reports/jacoco/test.xml"))
                 }
             }
         }
@@ -233,39 +190,25 @@ class IntygPlugin : Plugin<Project> {
     private fun applySonar(project: Project) {
         if (project === project.rootProject) {
             project.pluginManager.apply(SonarQubePlugin::class.java)
+            val buildDirectory = project.layout.buildDirectory.get().asFile
 
             with(project.extensions.getByType(SonarExtension::class.java)) {
                 properties {
                     it.property("sonar.gradle.skipCompile", true)
                     it.property("sonar.projectName", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
                     it.property("sonar.projectKey", (System.getProperty("sonarProjectPrefix") ?: "") + project.name)
-                    it.property("sonar.coverage.jacoco.xmlReportPath", "${project.buildDir}/reports/jacoco/test.xml")
-                    it.property("sonar.dependencyCheck.jsonReportPath", "${project.buildDir}/reports/dependency-check-report.json")
-                    it.property("sonar.dependencyCheck.htmlReportPath", "${project.buildDir}/reports/dependency-check-report.html")
+                    it.property("sonar.coverage.jacoco.xmlReportPath", "${buildDirectory}/reports/jacoco/test.xml")
+                    it.property("sonar.dependencyCheck.jsonReportPath", "${buildDirectory}/reports/dependency-check-report.json")
+                    it.property("sonar.dependencyCheck.htmlReportPath", "${buildDirectory}/reports/dependency-check-report.html")
                     it.property("sonar.host.url", System.getProperty("sonarUrl") ?: "https://sonarqube.drift.inera.se")
-                    System.getProperty("ineraSonarLogin")?.let { prop ->
-                        it.property("sonar.login", prop)
-                    }
+
+                    System.getProperty("ineraSonarLogin")?.let { prop -> it.property("sonar.login", prop)  }
                     it.property("sonar.test.exclusions", "**/src/test/**")
                     it.property("sonar.exclusions",
                         listOf("**/stub/**", "**/test/**", "**/exception/**", "**/*Exception*.java", "**/*Fake*.java", "**/vendor/**",
                             "**/*testability/**", "**/swagger-ui/**", "**/generatedSource/**", "**/templates.js"))
                     it.property("sonar.javascript.lcov.reportPath", "build/karma/merged_lcov.info")
-
                 }
-            }
-        }
-    }
-
-    private fun applySharedTestReport(project: Project) {
-        val reportTask = project.tasks.create("testReport", SharedTestReportTask::class.java)
-        project.subprojects.forEach { subProject ->
-            subProject.afterEvaluate {
-                // We want this task to finalize all test tasks, so that it is run whether any tests failed or not.
-                // B/c of a limitation in gradle, we cannot both depend on a task AND finalize it. Therefore we depend
-                // on the output of the test tasks, rather than the test tasks themselves.
-                reportTask.reportOn(project.getTasksByName("test", true).map { task -> (task as Test).binaryResultsDirectory })
-                it.tasks.withType(Test::class.java).forEach { task -> task.finalizedBy(reportTask) }
             }
         }
     }
@@ -294,35 +237,6 @@ class IntygPlugin : Plugin<Project> {
         }
     }
 
-    private fun copyFile(sourceFile: File, destinationDir: Path) : Path? {
-        if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
-            sourceFile.inputStream().use { input ->
-                Files.copy(input, destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
-            }
-
-            val supportedAttr = destinationDir.fileSystem.supportedFileAttributeViews()
-            val destFile = destinationDir.resolve(sourceFile.name)
-
-            if (supportedAttr.contains("posix")) {
-                // Underliggande system stödjer POSIX
-                // Assign permissions (chmod 755).
-                val perms = PosixFilePermissions.fromString("rwxr-xr-x")
-                Files.setPosixFilePermissions(destFile, perms)
-            } else {
-                val file = destFile.toFile()
-                file.setReadable(true, false)      // Everyone can read
-                file.setWritable(true, true)       // Only the owner can write
-                file.setExecutable(true, false)  // Everyone can execute
-            }
-            return destFile
-        }
-        return null
-    }
-
-    private fun isRootProject(project: Project) : Boolean {
-        return project.rootDir.path.equals(project.projectDir.path)
-    }
-
     // Add the short name of a task type to the project properties. This makes it possible to refer to the task type without its
     // fully qualified name and without an import in a (groovy) gradle script using this plugin.
     // I.e. "task createVersionPropertyFile(type: VersionPropertyFileTask)" instead of
@@ -342,7 +256,6 @@ class IntygPlugin : Plugin<Project> {
     private fun useErrorprone(project: Project) =
             !(project.rootProject.hasProperty(ERRORPRONE_EXCLUDE))
                // && project.name.matches((project.rootProject.property(ERRORPRONE_EXCLUDE) as String).toRegex()))
-
 }
 
 fun addProjectPropertiesFromFile(project: Project, propfile: File) {
@@ -370,4 +283,29 @@ fun findGitRepository(rootDirectory: File): Repository {
         .findGitDir(rootDirectory)!!
         .apply { gitDir ?: throw Exception("Project must be in a git directory for git-hooks to work. Recommended solution: git init") }
         .build()
+}
+
+fun copyFile(sourceFile: File, destinationDir: Path) : Path? {
+    if (sourceFile.isFile && destinationDir.toFile().isDirectory) {
+        sourceFile.inputStream().use { input ->
+            Files.copy(input, destinationDir.resolve(sourceFile.name), StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        val supportedAttr = destinationDir.fileSystem.supportedFileAttributeViews()
+        val destFile = destinationDir.resolve(sourceFile.name)
+
+        if (supportedAttr.contains("posix")) {
+            // Underliggande system stödjer POSIX
+            // Assign permissions (chmod 755).
+            val perms = PosixFilePermissions.fromString("rwxr-xr-x")
+            Files.setPosixFilePermissions(destFile, perms)
+        } else {
+            val file = destFile.toFile()
+            file.setReadable(true, false)      // Everyone can read
+            file.setWritable(true, true)       // Only the owner can write
+            file.setExecutable(true, false)  // Everyone can execute
+        }
+        return destFile
+    }
+    return null
 }

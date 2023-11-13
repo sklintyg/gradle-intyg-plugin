@@ -14,7 +14,7 @@ import java.util.*
 open class VersionPropertyFileTask : DefaultTask() {
     private val projectVersion = project.version.toString()
 
-    private val propertyFile = "${project.buildDir.path}/resources/main/version.properties"
+    private val propertyFile = "${project.layout.buildDirectory.get().asFile}/resources/main/version.properties"
     private val buildNumber = System.getenv("BUILD_NUMBER") ?: ""
     private val buildTime = Date()
     private var gitCommit: String? = null
@@ -22,13 +22,11 @@ open class VersionPropertyFileTask : DefaultTask() {
 
     init {
         description = "Create a version property file from current build properties."
-
         FileRepositoryBuilder().setGitDir(File(project.rootProject.projectDir, ".git"))
                 .readEnvironment().findGitDir().build().use {
             gitCommit = it.findRef(HEAD).name
             gitBranch = it.branch
         }
-
         inputs.property("project.version", projectVersion)
         inputs.property("gitCommit", gitCommit)
         inputs.property("gitBranch", gitBranch)
