@@ -228,6 +228,7 @@ class IntygPlugin : Plugin<Project> {
 
             val dependencyCheckExtension = project.extensions.getByType(DependencyCheckExtension::class.java)
             dependencyCheckExtension.formats = listOf("HTML", "JSON")
+            dependencyCheckExtension.nvd.datafeedUrl = "https://vulnz-nvd-mirror-devtest.intyg.nordicmedtest.se"
             dependencyCheckExtension.analyzers.assemblyEnabled = false
             dependencyCheckExtension.analyzers.nodeEnabled = false
             dependencyCheckExtension.analyzers.nodeAudit.enabled = false
