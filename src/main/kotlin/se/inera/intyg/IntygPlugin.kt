@@ -39,6 +39,7 @@ const val CODE_QUALITY_FLAG = "codeQuality"
 const val DETEKT_FLAG = "detekt"
 const val SPOTBUGS_EXCLUDE = "spotbugsExclude"
 const val ERRORPRONE_EXCLUDE = "errorproneExclude"
+private const val DEFAULT_NVD_DATAFEED_URL = "https://vulnz-nvd-mirror-devtest.intyg.nordicmedtest.se"
 
 class IntygPlugin : Plugin<Project> {
 
@@ -226,9 +227,10 @@ class IntygPlugin : Plugin<Project> {
         if (project === project.rootProject) {
             project.pluginManager.apply(DependencyCheckPlugin::class.java)
 
+            val nvdDatafeedUrl = System.getProperty("nvdDatafeedUrl")
             val dependencyCheckExtension = project.extensions.getByType(DependencyCheckExtension::class.java)
             dependencyCheckExtension.formats = listOf("HTML", "JSON")
-            dependencyCheckExtension.nvd.datafeedUrl = "https://vulnz-nvd-mirror-devtest.intyg.nordicmedtest.se"
+            dependencyCheckExtension.nvd.datafeedUrl = if (!nvdDatafeedUrl.isNullOrBlank()) nvdDatafeedUrl else DEFAULT_NVD_DATAFEED_URL
             dependencyCheckExtension.analyzers.assemblyEnabled = false
             dependencyCheckExtension.analyzers.nodeEnabled = false
             dependencyCheckExtension.analyzers.nodeAudit.enabled = false
