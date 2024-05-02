@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "se.inera.intyg.plugin.common"
-version = System.getProperty("buildVersion") ?: "3.3.1-SNAPSHOT"
+version = System.getProperty("buildVersion") ?: "3.3.2-SNAPSHOT"
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -67,7 +67,7 @@ dependencies {
   implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:5.2.1")
   implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1")
   implementation("org.springframework:spring-core:5.3.30")
-  implementation("org.owasp:dependency-check-gradle:8.4.2")
+  implementation("org.owasp:dependency-check-gradle:9.1.0")
 }
 
 repositories {
